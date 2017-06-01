@@ -11,7 +11,7 @@ def fail_for_regular_use(message):
 
 # https://www.directadmin.com/features.php?id=1702
 def main():
-    if 'where' in os.environ and os.environ.get('where') == 'inbox' or os.environ.get('where') == 'userspamfolder':
+    if 'where' in os.environ and os.environ.get('where') == 'inbox' or os.environ.get('where') == 'spamfolder':
         fail_for_regular_use('Spam możesz przekazywać do katalogu spam lub usuwać.')
 
     if 'high_score_block' in os.environ and os.environ.get('high_score_block') == 'no':

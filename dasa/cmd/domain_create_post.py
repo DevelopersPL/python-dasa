@@ -18,9 +18,9 @@ def main():
 
     # Report to CIAPI
     s = ciapi.get_session()
-    s.post(config.get('api_base_url') + 'system/directadmin/domain_create_post',
+    s.post(config.get('DEFAULT', 'api_base_url') + 'system/directadmin/domain_create_post',
            json=os.environ,
-           timeout=config.get('api_timeout'))
+           timeout=config.get('DEFAULT', 'api_timeout'))
 
     if s.status_code == 404:
         print(s.json().get('message'))

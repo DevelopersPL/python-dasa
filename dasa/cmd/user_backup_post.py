@@ -87,7 +87,7 @@ def main():
             'backup_datetime': time_string,
             'backup_size': backup_info.st_size,
             'backup_path': user_name + '/' + time_string + '/' + file_name,
-        }, timeout=config.get('api_timeout'))
+        }, timeout=config.get('DEFAULT', 'api_timeout'))
 
         if s.status_code != 200:
             exit(1)
