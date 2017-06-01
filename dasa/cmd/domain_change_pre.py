@@ -12,7 +12,7 @@ def main():
     del json.newdomain
     s.post(config.get('DEFAULT', 'api_base_url') + 'system/directadmin/domain_create_pre',
            json=json,
-           timeout=config.get('DEFAULT', 'api_timeout'))
+           timeout=config.getint('DEFAULT', 'api_timeout'))
 
     if s.status_code == 404:
         print(s.json().get('message'))
