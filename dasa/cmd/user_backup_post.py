@@ -81,7 +81,7 @@ def main():
 
         # Notify CIAPI
         s = ciapi.get_session()
-        s.post(config.get('DEFAULT', 'api_base_url') + 'system/directadmin/user_backup_post', json={
+        r = s.post(config.get('DEFAULT', 'api_base_url') + 'system/directadmin/user_backup_post', json={
             'username': user_name,
             'backup_filename': file_name,
             'backup_datetime': time_string,
@@ -89,5 +89,5 @@ def main():
             'backup_path': user_name + '/' + time_string + '/' + file_name,
         }, timeout=config.getint('DEFAULT', 'api_timeout'))
 
-        if s.status_code != 200:
+        if r.status_code != 200:
             exit(1)

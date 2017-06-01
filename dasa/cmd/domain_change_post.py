@@ -11,28 +11,28 @@ def main():
     old_domain = json['domain']
     json['domain'] = json['newdomain']
     del json['newdomain']
-    s.post(config.get('DEFAULT', 'api_base_url') + 'system/directadmin/domain_create_post',
+    r = s.post(config.get('DEFAULT', 'api_base_url') + 'system/directadmin/domain_create_post',
            json=json,
            timeout=config.getint('DEFAULT', 'api_timeout'))
 
-    if s.status_code == 404:
-        print(s.json().get('message'))
+    if r.status_code == 404:
+        print(r.json().get('message'))
         exit(0)
 
-    if s.status_code != 200:
-        print(s.json().get('message'))
+    if r.status_code != 200:
+        print(r.json().get('message'))
         exit(1)
 
     # domain_destroy_post for (old) domain
     json['domain'] = old_domain
-    s.post(config.get('DEFAULT', 'api_base_url') + 'system/directadmin/domain_destroy_post',
+    r = s.post(config.get('DEFAULT', 'api_base_url') + 'system/directadmin/domain_destroy_post',
            json=json,
            timeout=config.getint('DEFAULT', 'api_timeout'))
 
-    if s.status_code == 404:
-        print(s.json().get('message'))
+    if r.status_code == 404:
+        print(r.json().get('message'))
         exit(0)
 
-    if s.status_code != 200:
-        print(s.json().get('message'))
+    if r.status_code != 200:
+        print(r.json().get('message'))
         exit(1)
