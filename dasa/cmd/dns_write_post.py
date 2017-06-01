@@ -1,0 +1,14 @@
+import os
+from dasa import ciapi
+from dasa.config import config
+
+
+def main():
+    s = ciapi.get_session()
+    s.post(config.get('api_base_url') + 'system/directadmin/dns_write_post',
+           json=os.environ,
+           timeout=config.get('api_timeout'))
+
+    if s.status_code != 200:
+        print(s.json().get('message'))
+        exit(1)
