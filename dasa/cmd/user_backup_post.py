@@ -90,4 +90,5 @@ def main():
     }, timeout=config.getint('DEFAULT', 'api_timeout'))
 
     if r.status_code != 200:
+        print(r.json().get('message', None))
         exit(1)
