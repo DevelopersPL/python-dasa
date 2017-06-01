@@ -7,10 +7,10 @@ def main():
     s = ciapi.get_session()
 
     # domain_create_post for newdomain
-    json = os.environ
-    old_domain = json.domain
-    json.domain = json.newdomain
-    del json.newdomain
+    json = dict(os.environ)
+    old_domain = json['domain']
+    json['domain'] = json['newdomain']
+    del json['newdomain']
     s.post(config.get('DEFAULT', 'api_base_url') + 'system/directadmin/domain_create_post',
            json=json,
            timeout=config.getint('DEFAULT', 'api_timeout'))
@@ -24,7 +24,7 @@ def main():
         exit(1)
 
     # domain_destroy_post for (old) domain
-    json.domain = old_domain
+    json['domain'] = old_domain
     s.post(config.get('DEFAULT', 'api_base_url') + 'system/directadmin/domain_destroy_post',
            json=json,
            timeout=config.getint('DEFAULT', 'api_timeout'))
