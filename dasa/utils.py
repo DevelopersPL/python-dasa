@@ -8,9 +8,13 @@ def file_ensure_line(path, line, exists=True):
             if not any(line == x.strip() for x in f):
                 f.write(line + '\n')
     else:
-        for line in fileinput.input(path, inplace=True):
-            if line.strip() != line:
-                print(line.strip())
+        try:
+            for line in fileinput.input(path, inplace=True):
+                if line.strip() != line:
+                    print(line.strip())
+        except OSError:
+            # Ignore if file does not exist
+            pass
 
 
 class NoopMD5(object):
