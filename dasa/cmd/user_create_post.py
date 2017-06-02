@@ -1,4 +1,5 @@
 import os
+import errno
 import pwd
 import grp
 import subprocess
@@ -58,6 +59,12 @@ def main():
             else:
                 f.write(os.environ.get('email_limit') + "\n")
         os.chmod('/etc/virtual/limit_' + daa['username'], 0o644)
+    else:
+        try:
+            os.remove('/etc/virtual/limit_' + daa['username'])
+        except OSError as e:
+            if e.errno != errno.ENOENT:  # errno.ENOENT = no such file or directory
+                raise
 
     # Apply LVE limits
     subprocess.check_call(['/usr/sbin/lvectl', 'set-user', daa['username'], '--default=all'])
