@@ -86,4 +86,4 @@ def main():
     # Run CloudLinux hooks
     subprocess.check_call('/usr/share/cagefs-plugins/hooks/directadmin/user_create_post.sh')
     subprocess.check_call(['/usr/bin/da-addsudoer', daa['username'], 'add_cagefs_user'])
-    subprocess.check_call(['/usr/bin/da_add_admin', daa['username']])
+    subprocess.call(['/usr/bin/da_add_admin', daa['username']])  # ignore exit code because it's 1 for non-admins
