@@ -54,9 +54,9 @@ def main():
     if daa['limit_emails'] or os.environ.get('email_limit'):
         with open('/etc/virtual/limit_' + daa['username'], 'w') as f:
             if daa['limit_emails']:
-                f.write(str(daa['limit_emails']))
+                f.write(str(daa['limit_emails']) + "\n")
             else:
-                f.write(os.environ.get('email_limit'))
+                f.write(os.environ.get('email_limit') + "\n")
         os.chmod('/etc/virtual/limit_' + daa['username'], 0o644)
 
     # Apply LVE limits

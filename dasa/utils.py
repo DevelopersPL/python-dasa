@@ -9,9 +9,9 @@ def file_ensure_line(path, line, exists=True):
                 f.write(line + '\n')
     else:
         try:
-            for line in fileinput.input(path, inplace=True):
-                if line.strip() != line:
-                    print(line.strip())
+            for l in fileinput.input(path, inplace=True):
+                if l.strip() != line:
+                    print(l.strip())
         except OSError:
             # Ignore if file does not exist
             pass
