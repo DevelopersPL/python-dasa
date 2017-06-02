@@ -60,7 +60,7 @@ def main():
         os.chmod('/etc/virtual/limit_' + daa['username'], 0o644)
 
     # Apply LVE limits
-    subprocess.check_call(['/usr/sbin/lvectl', 'set-user', daa['username'], '--defaults=all'])
+    subprocess.check_call(['/usr/sbin/lvectl', 'set-user', daa['username'], '--default=all'])
     lve_line = ['/usr/sbin/lvectl', 'set-user', daa['username']]
     if daa['limit_lve_cpu']:
         lve_line.append('--speed=' + str(daa['limit_lve_cpu']) + '%')
