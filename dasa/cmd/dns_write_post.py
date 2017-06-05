@@ -4,6 +4,10 @@ from dasa.config import config
 
 
 def main():
+    if 'DOMAIN' not in os.environ:
+        print('Required environment variables missing, expecting: DOMAIN')
+        exit(1)
+
     s = ciapi.get_session()
     r = s.post(config.get('DEFAULT', 'api_base_url') + 'system/directadmin/dns_write_post',
            json=dict(os.environ),
