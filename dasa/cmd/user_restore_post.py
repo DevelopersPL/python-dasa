@@ -6,13 +6,13 @@ from dasa.config import config
 
 def main():
     # Run CloudLinux hooks
-    subprocess.check_call('/usr/share/cagefs-plugins/hooks/directadmin/user_restore_post.sh')
+    subprocess.call('/usr/share/cagefs-plugins/hooks/directadmin/user_restore_post.sh')  # ignore result
 
     # Report to CIAPI
     s = ciapi.get_session()
     r = s.post(config.get('DEFAULT', 'api_base_url') + 'system/directadmin/user_restore_post',
-           json=dict(os.environ),
-           timeout=config.getint('DEFAULT', 'api_timeout'))
+               json=dict(os.environ),
+               timeout=config.getint('DEFAULT', 'api_timeout'))
 
     if r.status_code == 404:
         print(r.json().get('message'))
