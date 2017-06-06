@@ -11,7 +11,7 @@ def log_with_env(message='dasa log env'):
 def env_to_log_extra_def():
     journal_extra = {}
     for k, v in dict(os.environ).items():
-        journal_extra['DA_' + k] = v
+        journal_extra['DA_HOOK_ENV_' + k] = v
     return journal_extra
 
 
