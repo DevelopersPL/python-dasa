@@ -6,7 +6,7 @@ from dasa.config import config
 
 
 def main():
-    logging.log(logging.INFO, 'domain_create_pre', **dict(os.environ))
+    logging.log(logging.INFO, 'domain_create_pre', extra=dict(os.environ))
 
     s = ciapi.get_session()
     r = s.post(config.get('DEFAULT', 'api_base_url') + 'system/directadmin/domain_create_pre',
