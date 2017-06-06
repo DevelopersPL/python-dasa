@@ -15,9 +15,6 @@ segment_limit = 5 * 1024 * 1024 * 1024
 def main():
     utils.log_with_env('user_backup_post', env=dict(os.environ))
 
-    log = logging.getLogger()
-    log.info('DASA: Running user_backup_post', extra=os.environ)
-
     if 'username' not in os.environ or 'file' not in os.environ:
         print('Required environment variables missing, expecting: username, file')
         exit(1)
@@ -50,7 +47,7 @@ def main():
         uploaded_objs = []
 
         for segment in range(segments):
-            log.info('Uploading segment %d', segment)
+            logging.info('Uploading segment %d', segment)
             f = open(os.environ.get('file'), 'rb')
             f.seek(segment * segment_limit)
             part_file = LengthWrapper(f, segment_limit, md5=False)
