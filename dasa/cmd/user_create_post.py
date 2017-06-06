@@ -1,6 +1,5 @@
 import os
 import errno
-import logging
 import pwd
 import grp
 import subprocess
@@ -11,7 +10,7 @@ import dasa.utils as utils
 
 
 def main():
-    logging.log(logging.INFO, 'user_create_post', extra=dict(os.environ))
+    utils.log_with_env('domain_create_pre')
 
     s = ciapi.get_session()
     r = s.post(config.get('DEFAULT', 'api_base_url') + 'system/directadmin/user_create_post',

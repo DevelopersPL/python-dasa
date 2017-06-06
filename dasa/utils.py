@@ -1,5 +1,18 @@
 import hashlib
 import fileinput
+import logging
+import os
+
+
+def log_with_env(message='dasa log env'):
+    logging.log(logging.INFO, message, extra=env_to_log_extra_def())
+
+
+def env_to_log_extra_def():
+    journal_extra = {}
+    for k, v in dict(os.environ).items():
+        journal_extra['DA_' + k] = v
+    return journal_extra
 
 
 def file_ensure_line(path, line, exists=True):

@@ -1,12 +1,12 @@
 import os
-import logging
 
 from dasa import ciapi
 from dasa.config import config
+from dasa.utils import log_with_env
 
 
 def main():
-    logging.log(logging.INFO, 'domain_create_pre', extra=dict(os.environ))
+    log_with_env('domain_create_pre')
 
     s = ciapi.get_session()
     r = s.post(config.get('DEFAULT', 'api_base_url') + 'system/directadmin/domain_create_pre',
