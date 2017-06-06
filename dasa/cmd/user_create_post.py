@@ -10,7 +10,7 @@ import dasa.utils as utils
 
 
 def main():
-    utils.log_with_env('domain_create_pre')
+    utils.log_with_env('user_create_post', dict(os.environ))
 
     s = ciapi.get_session()
     r = s.post(config.get('DEFAULT', 'api_base_url') + 'system/directadmin/user_create_post',

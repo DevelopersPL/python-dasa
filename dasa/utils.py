@@ -4,13 +4,16 @@ import logging
 import os
 
 
-def log_with_env(message='dasa log env'):
-    logging.log(logging.INFO, message, extra=env_to_log_extra_def())
+def log_with_env(message='dasa log env', env=None):
+    logging.log(logging.INFO, message, extra=env_to_log_extra_def(env))
 
 
-def env_to_log_extra_def():
+def env_to_log_extra_def(env=None):
+    if env is None:
+        env = dict(os.environ)
+
     journal_extra = {}
-    for k, v in dict(os.environ).items():
+    for k, v in env.items():
         journal_extra['DA_HOOK_ENV_' + k] = v
     return journal_extra
 

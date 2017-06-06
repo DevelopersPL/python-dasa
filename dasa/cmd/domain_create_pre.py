@@ -6,7 +6,7 @@ from dasa.utils import log_with_env
 
 
 def main():
-    log_with_env('domain_create_pre')
+    log_with_env('domain_create_pre', dict(os.environ))
 
     s = ciapi.get_session()
     r = s.post(config.get('DEFAULT', 'api_base_url') + 'system/directadmin/domain_create_pre',
