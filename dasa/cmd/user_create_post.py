@@ -58,7 +58,10 @@ def main():
                 f.write(str(daa['limit_emails']) + "\n")
             else:
                 f.write(os.environ.get('email_limit') + "\n")
-        os.chmod('/etc/virtual/limit_' + daa['username'], 0o644)
+        os.chmod('/etc/virtual/limit_' + daa['username'], 0o755)  # DA uses that chmod
+        uid = pwd.getpwnam('mail').pw_uid
+        gid = grp.getgrnam('mail').gr_gid
+        os.chown('/etc/virtual/limit_' + daa['username'], uid, gid)  # mail:mail
     else:
         try:
             os.remove('/etc/virtual/limit_' + daa['username'])
