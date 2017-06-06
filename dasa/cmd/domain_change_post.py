@@ -1,9 +1,12 @@
 import os
 from dasa import ciapi
 from dasa.config import config
+from dasa import utils
 
 
 def main():
+    utils.log_with_env('domain_change_post', env=dict(os.environ))
+
     s = ciapi.get_session()
 
     # domain_create_post for newdomain
@@ -12,8 +15,8 @@ def main():
     json['domain'] = json['newdomain']
     del json['newdomain']
     r = s.post(config.get('DEFAULT', 'api_base_url') + 'system/directadmin/domain_create_post',
-           json=json,
-           timeout=config.getint('DEFAULT', 'api_timeout'))
+               json=json,
+               timeout=config.getint('DEFAULT', 'api_timeout'))
 
     if r.status_code == 404:
         print(r.json().get('message'))
@@ -26,8 +29,8 @@ def main():
     # domain_destroy_post for (old) domain
     json['domain'] = old_domain
     r = s.post(config.get('DEFAULT', 'api_base_url') + 'system/directadmin/domain_destroy_post',
-           json=json,
-           timeout=config.getint('DEFAULT', 'api_timeout'))
+               json=json,
+               timeout=config.getint('DEFAULT', 'api_timeout'))
 
     if r.status_code == 404:
         print(r.json().get('message'))

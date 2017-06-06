@@ -8,6 +8,8 @@ def main():
         print('Required environment variables missing, expecting: username')
         exit(1)
 
+    utils.log_with_env('user_destroy_post', env=dict(os.environ))
+
     username = os.environ.get('username')
 
     # Remove block_emails_scripts

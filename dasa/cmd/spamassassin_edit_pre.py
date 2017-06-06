@@ -1,4 +1,5 @@
 import os
+from dasa import utils
 
 
 def fail_for_regular_use(message):
@@ -11,6 +12,8 @@ def fail_for_regular_use(message):
 
 # https://www.directadmin.com/features.php?id=1702
 def main():
+    utils.log_with_env('spamassassin_edit_pre', env=dict(os.environ))
+
     if 'where' in os.environ and os.environ.get('where') == 'inbox' or os.environ.get('where') == 'spamfolder':
         fail_for_regular_use('Spam możesz przekazywać do katalogu spam lub usuwać.')
 

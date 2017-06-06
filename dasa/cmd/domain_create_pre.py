@@ -2,11 +2,11 @@ import os
 
 from dasa import ciapi
 from dasa.config import config
-from dasa.utils import log_with_env
+from dasa import utils
 
 
 def main():
-    log_with_env('domain_create_pre', env=dict(os.environ))
+    utils.log_with_env('domain_create_pre', env=dict(os.environ))
 
     s = ciapi.get_session()
     r = s.post(config.get('DEFAULT', 'api_base_url') + 'system/directadmin/domain_create_pre',

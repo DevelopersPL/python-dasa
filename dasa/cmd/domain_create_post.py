@@ -1,9 +1,12 @@
 import os
 from dasa import ciapi
 from dasa.config import config
+from dasa import utils
 
 
 def main():
+    utils.log_with_env('domain_create_post', env=dict(os.environ))
+
     if 'username' not in os.environ or 'domain' not in os.environ:
         print('Required environment variables missing, expecting: username, domain')
         exit(1)
@@ -19,8 +22,8 @@ def main():
     # Report to CIAPI
     s = ciapi.get_session()
     r = s.post(config.get('DEFAULT', 'api_base_url') + 'system/directadmin/domain_create_post',
-           json=dict(os.environ),
-           timeout=config.getint('DEFAULT', 'api_timeout'))
+               json=dict(os.environ),
+               timeout=config.getint('DEFAULT', 'api_timeout'))
 
     if r.status_code == 404:
         print(r.json().get('message'))

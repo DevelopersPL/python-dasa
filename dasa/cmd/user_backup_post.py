@@ -7,11 +7,14 @@ from dasa import ciapi
 from dasa import osapi
 from dasa.config import config
 from dasa.utils import LengthWrapper
+from dasa import utils
 
 segment_limit = 5 * 1024 * 1024 * 1024
 
 
 def main():
+    utils.log_with_env('user_backup_post', env=dict(os.environ))
+
     log = logging.getLogger()
     log.info('DASA: Running user_backup_post', extra=os.environ)
 
