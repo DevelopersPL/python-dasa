@@ -12,4 +12,4 @@ formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(messag
 ch.setFormatter(formatter)
 root.addHandler(ch)
 
-root.addHandler(journal.JournalHandler(logging.INFO, name='dasa'))
+root.addHandler(journal.JournalHandler(logging.INFO, SYSLOG_IDENTIFIER='dasa'))
