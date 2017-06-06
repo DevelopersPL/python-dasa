@@ -25,4 +25,4 @@ def main():
     # Run CloudLinux hooks
     subprocess.check_call(['/usr/bin/da-removesudoer', username, 'cagefs_user'])
     subprocess.check_call('/usr/share/cagefs-plugins/hooks/directadmin/user_destroy_post.sh')
-    subprocess.check_call(['/usr/bin/da_remove_admin', username])
+    subprocess.call(['/usr/bin/da_remove_admin', username])  # ignore result
