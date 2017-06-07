@@ -28,25 +28,26 @@ def main():
     daa = r.json()
 
     # Ensure SpamAssassin settings exist
-    if not os.path.isdir('/home/' + daa['username'] + '/.spamassassin'):
-        os.mkdir('/home/' + daa['username'] + '/.spamassassin', 0x771)
-        uid = pwd.getpwnam(daa['username']).pw_uid
-        gid = grp.getgrnam('mail').gr_gid
-        os.chown('/home/' + daa['username'] + '/.spamassassin', uid, gid)  # $username:mail
+    if 'user_creation' in os.environ and os.environ['user_creation'] == '1':
+        if not os.path.isdir('/home/' + daa['username'] + '/.spamassassin'):
+            os.mkdir('/home/' + daa['username'] + '/.spamassassin', 0x771)
+            uid = pwd.getpwnam(daa['username']).pw_uid
+            gid = grp.getgrnam('mail').gr_gid
+            os.chown('/home/' + daa['username'] + '/.spamassassin', uid, gid)  # $username:mail
 
-        if not os.path.isfile('/home/' + daa['username'] + '/.spamassassin/user_prefs'):
-            with open('/home/' + daa['username'] + '/.spamassassin/user_prefs', 'w') as f:
-                f.write("required_score 5.0\nreport_safe 1\n")
-            os.chmod('/home/' + daa['username'] + '/.spamassassin/user_prefs', 0o755)
-            gid = grp.getgrnam(daa['username']).gr_gid
-            os.chown('/home/' + daa['username'] + '/.spamassassin/user_prefs', uid, gid)  # $username:$username
+            if not os.path.isfile('/home/' + daa['username'] + '/.spamassassin/user_prefs'):
+                with open('/home/' + daa['username'] + '/.spamassassin/user_prefs', 'w') as f:
+                    f.write("required_score 5.0\nreport_safe 1\n")
+                os.chmod('/home/' + daa['username'] + '/.spamassassin/user_prefs', 0o755)
+                gid = grp.getgrnam(daa['username']).gr_gid
+                os.chown('/home/' + daa['username'] + '/.spamassassin/user_prefs', uid, gid)  # $username:$username
 
-        if not os.path.isfile('/home/' + daa['username'] + '/.spamassassin/spam'):
-            with open('/home/' + daa['username'] + '/.spamassassin/spam', 'w'):
-                pass
-            os.chmod('/home/' + daa['username'] + '/.spamassassin/spam', 0o660)
-            uid = pwd.getpwnam('mail').pw_uid
-            os.chown('/home/' + daa['username'] + '/.spamassassin/spam', uid, gid)  # mail:$username
+            if not os.path.isfile('/home/' + daa['username'] + '/.spamassassin/spam'):
+                with open('/home/' + daa['username'] + '/.spamassassin/spam', 'w'):
+                    pass
+                os.chmod('/home/' + daa['username'] + '/.spamassassin/spam', 0o660)
+                uid = pwd.getpwnam('mail').pw_uid
+                os.chown('/home/' + daa['username'] + '/.spamassassin/spam', uid, gid)  # mail:$username
 
     # Apply block_emails_scripts
     utils.file_ensure_line('/etc/virtual/blacklist_script_usernames', daa['username'], daa['block_emails_scripts'])
