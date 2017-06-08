@@ -79,7 +79,7 @@ def main():
     if daa['limit_lve_cpu']:
         lve_line.append('--speed=' + str(daa['limit_lve_cpu']) + '%')
     if daa['limit_lve_pmem']:
-        lve_line.append('--pmem=' + str(daa['limit_lve_pmem']))
+        lve_line.append('--pmem=' + str(daa['limit_lve_pmem']) + 'M')
     if daa['limit_lve_io']:
         lve_line.append('--io=' + str(daa['limit_lve_io']))
     if daa['limit_lve_iops']:
