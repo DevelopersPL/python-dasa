@@ -48,14 +48,14 @@ def main():
 
         for segment in range(segments):
             logging.info('Uploading segment %d', segment)
-            f = open(os.environ.get('file'), 'rb')
-            f.seek(segment * segment_limit)
-            part_file = LengthWrapper(f, segment_limit, md5=False)
-            obj = osconn.object_store.upload_object(
-                container=config.get('DEFAULT', 'container-backups-segments'),
-                name=user_name + '/' + time_string + '/' + file_name + '/' + str(segment) + '.part',
-                data=part_file,
-                content_type='application/x-gzip')
+            with open(os.environ.get('file'), 'rb') as f:
+                f.seek(segment * segment_limit)
+                part_file = LengthWrapper(f, segment_limit, md5=False)
+                obj = osconn.object_store.upload_object(
+                    container=config.get('DEFAULT', 'container-backups-segments'),
+                    name=user_name + '/' + time_string + '/' + file_name + '/' + str(segment) + '.part',
+                    data=part_file,
+                    content_type='application/x-gzip')
 
             uploaded_objs.append(obj)
 
