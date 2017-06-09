@@ -3,6 +3,11 @@ import os
 import logging
 import time
 import json
+
+from openstack.exceptions import HttpException
+from retry import retry
+from retry.api import retry_call
+
 from dasa import ciapi
 from dasa import osapi
 from dasa.config import config
@@ -26,38 +31,40 @@ def main():
 
     # Process to uploading the backup file
     osconn = osapi.os_connect()
-    obj = None
 
     # max object size is 5368709122 (5 GB + 2 bytes)
     if backup_info.st_size <= segment_limit:
-        with open(os.environ.get('file'), 'rb') as f:
-            obj = osconn.object_store.upload_object(container=config.get('DEFAULT', 'container-backups'),
-                                                    name=user_name + '/' + time_string + '/' + file_name,
-                                                    data=f,
-                                                    content_type='application/x-gzip')
+        obj = upload_file(osconn, os.environ.get('file'), user_name + '/' + time_string + '/' + file_name)
 
-        osconn.object_store.set_object_metadata(obj,
-                                                container=config.get('DEFAULT', 'container-backups'),
-                                                username=user_name,
-                                                backup_time=time_string)
+        try:
+            osconn.object_store.set_object_metadata(obj,
+                                                    container=config.get('DEFAULT', 'container-backups'),
+                                                    username=user_name,
+                                                    backup_time=time_string)
+        except HttpException:
+            # We don't really need metadata that much, it's not worth aborting the whole backup
+            pass
 
     else:
         # We have to send multiple segments and create a Static Large Object manifest
         segments = int(math.ceil(backup_info.st_size / segment_limit))
         uploaded_objs = []
 
-        for segment in range(segments):
-            logging.info('Uploading segment %d', segment)
-            with open(os.environ.get('file'), 'rb') as f:
-                f.seek(segment * segment_limit)
-                part_file = LengthWrapper(f, segment_limit, md5=False)
-                obj = osconn.object_store.upload_object(
-                    container=config.get('DEFAULT', 'container-backups-segments'),
-                    name=user_name + '/' + time_string + '/' + file_name + '/' + str(segment) + '.part',
-                    data=part_file,
-                    content_type='application/x-gzip')
+        try:
+            for segment in range(segments):
+                logging.info('Uploading segment %d', segment)
+                obj = upload_file(osconn, os.environ.get('file'),
+                                  user_name + '/' + time_string + '/' + file_name + '/' + str(segment) + '.part',
+                                  segment * segment_limit, segment_limit)
 
-            uploaded_objs.append(obj)
+                uploaded_objs.append(obj)
+        except Exception as e:
+            for o in uploaded_objs:
+                try:
+                    osconn.object_store.delete_object(o)
+                except:
+                    pass
+            raise e
 
         manifest_data = json.dumps([
             {
@@ -66,15 +73,27 @@ def main():
             } for o in uploaded_objs
         ])
 
-        obj = osconn.object_store.upload_object(
-            container=config.get('DEFAULT', 'container-backups'),
-            name=user_name + '/' + time_string + '/' + file_name + '?multipart-manifest=put',
-            data=manifest_data)
+        try:
+            obj = retry_call(osconn.object_store.upload_object, fkwargs={
+                "container": config.get('DEFAULT', 'container-backups'),
+                "name": user_name + '/' + time_string + '/' + file_name + '?multipart-manifest=put',
+                "data": manifest_data}, tries=3)
+        except Exception as e:
+            for o in uploaded_objs:
+                try:
+                    osconn.object_store.delete_object(o)
+                except:
+                    pass
+            raise e
 
-        osconn.object_store.set_object_metadata(obj,
-                                                container=config.get('DEFAULT', 'container-backups'),
-                                                username=user_name,
-                                                backup_time=time_string)
+        try:
+            osconn.object_store.set_object_metadata(obj,
+                                                    container=config.get('DEFAULT', 'container-backups'),
+                                                    username=user_name,
+                                                    backup_time=time_string)
+        except HttpException:
+            # We don't really need metadata that much, it's not worth aborting the whole backup
+            pass
 
     # Remove uploaded backup file now
     os.remove(os.environ.get('file'))
@@ -92,3 +111,19 @@ def main():
     if r.status_code != 200:
         print(r.json().get('message', None))
         exit(1)
+
+
+@retry(HttpException, tries=3, delay=2)
+def upload_file(osconn, local, remote, start=None, limit=None):
+    if start is not None or limit is not None:
+        c = config.get('DEFAULT', 'container-backups-segments')
+    else:
+        c = config.get('DEFAULT', 'container-backups')
+
+    with open(local, 'rb') as f:
+        if start is not None:
+            f.seek(start)
+        if limit is not None:
+            f = LengthWrapper(f, limit, md5=False)
+
+        return osconn.object_store.upload_object(container=c, name=remote, data=f, content_type='application/x-gzip')
