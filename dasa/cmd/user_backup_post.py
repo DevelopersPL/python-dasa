@@ -29,14 +29,12 @@ def main():
     file_name = os.path.basename(os.environ.get('file'))
     user_name = os.environ.get('username')
 
-    # Process to uploading the backup file
-    osconn = osapi.os_connect()
-
     # max object size is 5368709122 (5 GB + 2 bytes)
     if backup_info.st_size <= segment_limit:
-        obj = upload_file(osconn, os.environ.get('file'), user_name + '/' + time_string + '/' + file_name)
+        obj = upload_file(os.environ.get('file'), user_name + '/' + time_string + '/' + file_name)
 
         try:
+            osconn = osapi.os_connect()
             osconn.object_store.set_object_metadata(obj,
                                                     container=config.get('DEFAULT', 'container-backups'),
                                                     username=user_name,
@@ -53,7 +51,7 @@ def main():
         try:
             for segment in range(segments):
                 logging.info('Uploading segment %d', segment)
-                obj = upload_file(osconn, os.environ.get('file'),
+                obj = upload_file(os.environ.get('file'),
                                   user_name + '/' + time_string + '/' + file_name + '/' + str(segment) + '.part',
                                   segment * segment_limit, segment_limit)
 
@@ -61,6 +59,7 @@ def main():
         except Exception as e:
             for o in uploaded_objs:
                 try:
+                    osconn = osapi.os_connect()
                     osconn.object_store.delete_object(o)
                 except:
                     pass
@@ -81,12 +80,14 @@ def main():
         except Exception as e:
             for o in uploaded_objs:
                 try:
+                    osconn = osapi.os_connect()
                     osconn.object_store.delete_object(o)
                 except:
                     pass
             raise e
 
         try:
+            osconn = osapi.os_connect()
             osconn.object_store.set_object_metadata(obj,
                                                     container=config.get('DEFAULT', 'container-backups'),
                                                     username=user_name,
@@ -114,7 +115,7 @@ def main():
 
 
 @retry(HttpException, tries=3, delay=2)
-def upload_file(osconn, local, remote, start=None, limit=None):
+def upload_file(local, remote, start=None, limit=None):
     if start is not None or limit is not None:
         c = config.get('DEFAULT', 'container-backups-segments')
     else:
@@ -126,4 +127,5 @@ def upload_file(osconn, local, remote, start=None, limit=None):
         if limit is not None:
             f = LengthWrapper(f, limit, md5=False)
 
+        osconn = osapi.os_connect()
         return osconn.object_store.upload_object(container=c, name=remote, data=f, content_type='application/x-gzip')
