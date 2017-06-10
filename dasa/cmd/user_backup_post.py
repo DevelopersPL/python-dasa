@@ -15,7 +15,7 @@ from dasa.config import config
 from dasa.utils import LengthWrapper
 from dasa import utils
 
-segment_limit = 2 * 1024 * 1024 * 1024
+segment_limit = 1 * 1024 * 1024 * 1024
 
 
 def main():
