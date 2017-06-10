@@ -15,7 +15,7 @@ from dasa.config import config
 from dasa.utils import LengthWrapper
 from dasa import utils
 
-segment_limit = 1 * 1024 * 1024 * 1024
+segment_limit = 3 * 1024 * 1024 * 1024
 
 
 def main():
@@ -55,10 +55,13 @@ def main():
         try:
             for segment in range(segments):
                 logging.info('Uploading segment %d', segment)
+                if (segment + 1) * segment_limit > backup_info.st_size:
+                    limit = backup_info.st_size % segment_limit
+                else:
+                    limit = segment_limit
                 obj = upload_file(os.environ.get('file'),
                                   user_name + '/' + time_string + '/' + file_name + '/' + str(segment) + '.part',
-                                  segment * segment_limit, segment_limit)
-
+                                  segment * segment_limit, limit)
                 uploaded_objs.append(obj)
         except Exception as e:
             for o in uploaded_objs:
