@@ -23,7 +23,7 @@ def file_ensure_da_user(path, username, exists=True):
     if exists:
         with open(path, 'a+') as f:
             if not any(username == x.split(':', maxsplit=1)[0].strip() for x in f):
-                f.write(username + ':' + str(time.gmtime()) + '\n')
+                f.write(username + ':' + str(int(time.time())) + '\n')
     else:
         try:
             for l in fileinput.input(path, inplace=True):
