@@ -2,6 +2,7 @@ import hashlib
 import fileinput
 import logging
 import os
+import time
 
 
 def log_with_env(message='dasa log env', env=None):
@@ -18,15 +19,15 @@ def env_to_log_extra_def(env=None):
     return journal_extra
 
 
-def file_ensure_line(path, line, exists=True):
+def file_ensure_da_user(path, username, exists=True):
     if exists:
         with open(path, 'a+') as f:
-            if not any(line == x.strip() for x in f):
-                f.write(line + '\n')
+            if not any(username == x.split(':', maxsplit=1)[0].strip() for x in f):
+                f.write(username + ':' + str(time.gmtime()) + '\n')
     else:
         try:
             for l in fileinput.input(path, inplace=True):
-                if l.strip() != line:
+                if l.split(':', maxsplit=1)[0].strip() != username:
                     print(l.strip())
         except OSError:
             # Ignore if file does not exist

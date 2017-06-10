@@ -14,7 +14,7 @@ from dasa.config import config
 from dasa.utils import LengthWrapper
 from dasa import utils
 
-segment_limit = 2 * 1024 * 1024 * 1024
+segment_limit = 1 * 1024 * 1024 * 1024
 
 
 def main():
@@ -73,6 +73,7 @@ def main():
         ])
 
         try:
+            osconn = osapi.os_connect()
             obj = retry_call(osconn.object_store.upload_object, fkwargs={
                 "container": config.get('DEFAULT', 'container-backups'),
                 "name": user_name + '/' + time_string + '/' + file_name + '?multipart-manifest=put',
@@ -114,7 +115,7 @@ def main():
         exit(1)
 
 
-@retry(HttpException, tries=3, delay=2)
+@retry(HttpException, tries=3, delay=10)
 def upload_file(local, remote, start=None, limit=None):
     if start is not None or limit is not None:
         c = config.get('DEFAULT', 'container-backups-segments')

@@ -1,4 +1,6 @@
 import os
+import subprocess
+
 from dasa import ciapi
 from dasa.config import config
 from dasa import utils
@@ -6,6 +8,13 @@ from dasa import utils
 
 def main():
     utils.log_with_env('domain_change_post', env=dict(os.environ))
+
+    # Run CloudLinux hooks
+    subprocess.check_call([
+        '/opt/alt/python27/lib/python2.7/site-packages/clcommon/cpapi/helpers/directadmin_cache.py',
+        'update',
+        '--user=' + os.environ['username']
+    ])
 
     s = ciapi.get_session()
 

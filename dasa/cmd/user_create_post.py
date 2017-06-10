@@ -50,10 +50,11 @@ def main():
                 os.chown('/home/' + daa['username'] + '/.spamassassin/spam', uid, gid)  # mail:$username
 
     # Apply block_emails_scripts
-    utils.file_ensure_line('/etc/virtual/blacklist_script_usernames', daa['username'], daa['block_emails_scripts'])
+    # https://help.directadmin.com/item.php?id=655
+    utils.file_ensure_da_user('/etc/virtual/blacklist_script_usernames', daa['username'], daa['block_emails_scripts'])
 
     # Apply block_emails_all
-    utils.file_ensure_line('/etc/virtual/blacklist_usernames', daa['username'], daa['block_emails_all'])
+    utils.file_ensure_da_user('/etc/virtual/blacklist_usernames', daa['username'], daa['block_emails_all'])
 
     # Apply limit_emails
     if daa['limit_emails'] or os.environ.get('email_limit'):
@@ -101,3 +102,10 @@ def main():
     subprocess.check_call('/usr/share/cagefs-plugins/hooks/directadmin/user_create_post.sh')
     subprocess.check_call(['/usr/bin/da-addsudoer', daa['username'], 'add_cagefs_user'])
     subprocess.call(['/usr/bin/da_add_admin', daa['username']])  # ignore exit code because it's 1 for non-admins
+    subprocess.check_call([
+        '/opt/alt/python27/lib/python2.7/site-packages/clcommon/cpapi/helpers/directadmin_cache.py',
+        'create',
+        '--user=' + os.environ['username'],
+        '--domain=' + os.environ['domain'],
+        '--reseller=' + os.environ['creator'],
+    ])

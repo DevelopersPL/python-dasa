@@ -1,4 +1,6 @@
 import os
+import subprocess
+
 from dasa import ciapi
 from dasa.config import config
 from dasa import utils
@@ -18,6 +20,13 @@ def main():
 
         with open('/usr/local/directadmin/data/task.queue', 'a') as f:
             f.write('action=rewrite&value=filter&user=' + os.environ.get('username'))
+
+    # Run CloudLinux hooks
+    subprocess.check_call([
+        '/opt/alt/python27/lib/python2.7/site-packages/clcommon/cpapi/helpers/directadmin_cache.py',
+        'update',
+        '--user=' + os.environ['username']
+    ])
 
     # Report to CIAPI
     s = ciapi.get_session()

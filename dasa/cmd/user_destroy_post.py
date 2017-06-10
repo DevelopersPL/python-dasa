@@ -28,3 +28,9 @@ def main():
     subprocess.check_call(['/usr/bin/da-removesudoer', username, 'cagefs_user'])
     subprocess.check_call('/usr/share/cagefs-plugins/hooks/directadmin/user_destroy_post.sh')
     subprocess.call(['/usr/bin/da_remove_admin', username])  # ignore result
+    subprocess.check_call([
+        '/opt/alt/python27/lib/python2.7/site-packages/clcommon/cpapi/helpers/directadmin_cache.py',
+        'remove',
+        '--reseller=' + os.environ['creator'],
+        '--user=' + os.environ['username']
+    ])
