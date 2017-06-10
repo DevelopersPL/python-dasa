@@ -132,5 +132,6 @@ def upload_file(local, remote, start=None, limit=None):
         if limit is not None:
             f = LengthWrapper(f, limit, md5=False)
 
+        logging.info('Starting upload of ' + remote)
         osconn = osapi.os_connect()
         return osconn.object_store.upload_object(container=c, name=remote, data=f, content_type='application/x-gzip')
