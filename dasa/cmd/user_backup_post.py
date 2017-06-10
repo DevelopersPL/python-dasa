@@ -3,6 +3,7 @@ import os
 import logging
 import time
 import json
+import psutil
 
 from openstack.exceptions import HttpException
 from retry import retry
@@ -14,7 +15,7 @@ from dasa.config import config
 from dasa.utils import LengthWrapper
 from dasa import utils
 
-segment_limit = 1 * 1024 * 1024 * 1024
+segment_limit = 2 * 1024 * 1024 * 1024
 
 
 def main():
@@ -23,6 +24,9 @@ def main():
     if 'username' not in os.environ or 'file' not in os.environ:
         print('Required environment variables missing, expecting: username, file')
         exit(1)
+
+    p = psutil.Process(os.getpid())
+    p.nice(0)
 
     backup_info = os.stat(os.environ.get('file'))
     time_string = time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime(backup_info.st_mtime))
