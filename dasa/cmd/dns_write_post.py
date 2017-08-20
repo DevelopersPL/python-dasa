@@ -13,8 +13,8 @@ def main():
 
     s = ciapi.get_session()
     r = s.post(config.get('DEFAULT', 'api_base_url') + 'system/directadmin/dns_write_post',
-           json=dict(os.environ),
-           timeout=config.getint('DEFAULT', 'api_timeout'))
+               json=dict(os.environ),
+               timeout=config.getint('DEFAULT', 'api_timeout'))
 
     if r.status_code != 200:
         print(r.json().get('message'))
