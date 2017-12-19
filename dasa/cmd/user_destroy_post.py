@@ -13,10 +13,10 @@ def main():
     username = os.environ.get('username')
 
     # Remove block_emails_scripts
-    utils.file_ensure_line('/etc/virtual/blacklist_script_usernames', username, False)
+    utils.file_ensure_da_user('/etc/virtual/blacklist_script_usernames', username, False)
 
     # Apply block_emails_all
-    utils.file_ensure_line('/etc/virtual/blacklist_usernames', username, False)
+    utils.file_ensure_da_user('/etc/virtual/blacklist_usernames', username, False)
 
     # Apply limit_emails
     try:
