@@ -10,9 +10,9 @@ def main():
     s = ciapi.get_session()
 
     # pre-clear via domain_create_pre
-    json = os.environ
-    json.domain = json.newdomain
-    del json.newdomain
+    json = dict(os.environ)
+    json['domain'] = json['newdomain']
+    del json['newdomain']
     r = s.post(config.get('DEFAULT', 'api_base_url') + 'system/directadmin/domain_create_pre',
                json=json,
                timeout=config.getint('DEFAULT', 'api_timeout'))
