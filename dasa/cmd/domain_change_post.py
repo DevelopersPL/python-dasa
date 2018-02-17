@@ -13,7 +13,7 @@ def main():
     subprocess.check_call([
         '/opt/alt/python27/lib/python2.7/site-packages/clcommon/cpapi/helpers/directadmin_cache.py',
         'update',
-        '--user=' + os.environ['username']
+        '--user', os.environ.get('username')
     ])
 
     s = ciapi.get_session()
