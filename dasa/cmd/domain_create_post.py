@@ -21,13 +21,6 @@ def main():
         with open('/usr/local/directadmin/data/task.queue', 'a') as f:
             f.write('action=rewrite&value=filter&user=' + os.environ.get('username'))
 
-    # Run CloudLinux hooks
-    subprocess.check_call([
-        '/opt/alt/python27/lib/python2.7/site-packages/clcommon/cpapi/helpers/directadmin_cache.py',
-        'update',
-        '--user', os.environ.get('username')
-    ])
-
     # Report to CIAPI
     s = ciapi.get_session()
     r = s.post(config.get('DEFAULT', 'api_base_url') + 'system/directadmin/domain_create_post',

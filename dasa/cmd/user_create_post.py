@@ -102,10 +102,3 @@ def main():
     subprocess.check_call('/usr/share/cagefs-plugins/hooks/directadmin/user_create_post.sh')
     subprocess.check_call(['/usr/bin/da-addsudoer', daa['username'], 'add_cagefs_user'])
     subprocess.call(['/usr/bin/da_add_admin', daa['username']])  # ignore exit code because it's 1 for non-admins
-    subprocess.check_call([
-        '/opt/alt/python27/lib/python2.7/site-packages/clcommon/cpapi/helpers/directadmin_cache.py',
-        'create',
-        '--user=' + os.environ['username'],
-        '--domain=' + os.environ['domain'],
-        '--reseller=' + os.environ['creator'],
-    ])

@@ -9,13 +9,6 @@ from dasa import utils
 def main():
     utils.log_with_env('domain_destroy_post', env=dict(os.environ))
 
-    # Run CloudLinux hooks
-    subprocess.check_call([
-        '/opt/alt/python27/lib/python2.7/site-packages/clcommon/cpapi/helpers/directadmin_cache.py',
-        'update',
-        '--user=' + os.environ['username']
-    ])
-
     s = ciapi.get_session()
     r = s.post(config.get('DEFAULT', 'api_base_url') + 'system/directadmin/domain_destroy_post',
                json=dict(os.environ),
