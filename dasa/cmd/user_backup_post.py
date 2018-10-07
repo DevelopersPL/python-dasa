@@ -124,10 +124,7 @@ def main():
 
 @retry(HttpException, tries=3, delay=60)
 def upload_file(local, remote, start=None, limit=None):
-    if start is not None or limit is not None:
-        c = config.get('DEFAULT', 'container-backups-segments')
-    else:
-        c = config.get('DEFAULT', 'container-backups')
+    c = config.get('DEFAULT', 'container-backups')
 
     with open(local, 'rb') as f:
         if start is not None:
