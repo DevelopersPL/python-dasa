@@ -40,7 +40,7 @@ def main():
         try:
             osconn = osapi.os_connect()
             osconn.object_store.set_object_metadata(obj,
-                                                    container=config.get('DEFAULT', 'container-backups'),
+                                                    container=config.get('DEFAULT', 'backups_container'),
                                                     username=user_name,
                                                     backup_time=time_string)
         except HttpException:
@@ -82,7 +82,7 @@ def main():
         try:
             osconn = osapi.os_connect()
             obj = retry_call(osconn.object_store.upload_object, fkwargs={
-                "container": config.get('DEFAULT', 'container-backups'),
+                "container": config.get('DEFAULT', 'backups_container'),
                 "name": user_name + '/' + time_string + '/' + file_name + '?multipart-manifest=put',
                 "data": manifest_data}, tries=3)
         except Exception as e:
@@ -97,7 +97,7 @@ def main():
         try:
             osconn = osapi.os_connect()
             osconn.object_store.set_object_metadata(obj,
-                                                    container=config.get('DEFAULT', 'container-backups'),
+                                                    container=config.get('DEFAULT', 'backups_container'),
                                                     username=user_name,
                                                     backup_time=time_string)
         except HttpException:
@@ -124,7 +124,7 @@ def main():
 
 @retry(HttpException, tries=3, delay=60)
 def upload_file(local, remote, start=None, limit=None):
-    c = config.get('DEFAULT', 'container-backups')
+    c = config.get('DEFAULT', 'backups_container')
 
     with open(local, 'rb') as f:
         if start is not None:
