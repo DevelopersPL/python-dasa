@@ -34,17 +34,6 @@ def main():
     # max object size is 5368709122 (5 GB + 2 bytes)
     if backup_info.st_size <= segment_limit:
         obj = upload_file(os.environ.get('file'), user_name + '/' + time_string + '/' + file_name)
-
-        try:
-            c = os_connect()
-            c.object_store.set_object_metadata(obj,
-                                               container=config.get('DEFAULT', 'backups_container'),
-                                               username=user_name,
-                                               backup_time=time_string)
-        except HttpException:
-            # We don't really need metadata that much, it's not worth aborting the whole backup
-            pass
-
     else:
         # We have to send multiple segments and create a Static Large Object manifest
         segments = int(math.ceil(backup_info.st_size / segment_limit))
@@ -61,48 +50,44 @@ def main():
                                   user_name + '/' + time_string + '/' + file_name + '/' + str(segment) + '.part',
                                   segment * segment_limit, limit)
                 uploaded_objs.append(obj)
-        except Exception as e:
-            for o in uploaded_objs:
-                try:
-                    c = os_connect()
-                    c.object_store.delete_object(o)
-                except:
-                    pass
-            raise e
 
-        manifest_data = json.dumps([
-            {
-                'path': o.container + '/' + o.name,
-                'etag': o.etag,
-            } for o in uploaded_objs
-        ])
+            # assemble manifest consisting of all segments
+            manifest_data = json.dumps([
+                {
+                    'path': o.container + '/' + o.name,
+                    'etag': o.etag,
+                } for o in uploaded_objs
+            ])
 
-        try:
+            # upload manifest
             c = os_connect()
             obj = retry_call(c.object_store.upload_object, fkwargs={
-                "container": config.get('DEFAULT', 'backups_container'),
-                "name": user_name + '/' + time_string + '/' + file_name + '?multipart-manifest=put',
-                "data": manifest_data}, tries=3)
+                'container': config.get('DEFAULT', 'backups_container'),
+                'name': user_name + '/' + time_string + '/' + file_name + '?multipart-manifest=put',
+                'data': manifest_data}, tries=3)
         except Exception as e:
+            # attempt to purge segments
             for o in uploaded_objs:
                 try:
                     c = os_connect()
                     c.object_store.delete_object(o)
                 except:
+                    # failure is irrelevant
                     pass
             raise e
 
-        try:
-            c = os_connect()
-            c.object_store.set_object_metadata(obj,
-                                               container=config.get('DEFAULT', 'backups_container'),
-                                               username=user_name,
-                                               backup_time=time_string)
-        except HttpException:
-            # We don't really need metadata that much, it's not worth aborting the whole backup
-            pass
+    # Try to set metadata on the obj
+    try:
+        c = os_connect()
+        c.object_store.set_object_metadata(obj,
+                                           container=config.get('DEFAULT', 'backups_container'),
+                                           username=user_name,
+                                           backup_time=time_string)
+    except HttpException:
+        # We don't really need metadata that much, it's not worth aborting the whole backup
+        pass
 
-    # Remove uploaded backup file now
+    # Remove local backup file now
     os.remove(os.environ.get('file'))
 
     try:
@@ -114,6 +99,7 @@ def main():
             'backup_datetime': time_string,
             'backup_size': backup_info.st_size,
             'backup_path': user_name + '/' + time_string + '/' + file_name,
+            'container': config.get('DEFAULT', 'backups_container'),
         }, )
 
         if r.status_code != 200:
