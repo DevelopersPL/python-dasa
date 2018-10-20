@@ -1,14 +1,16 @@
+import logging
 import os
 import subprocess
-import dasa.utils as utils
+
+from dasa import utils
 
 
 def main():
-    if 'username' not in os.environ:
-        print('Required environment variables missing, expecting: username')
-        exit(1)
-
     utils.log_with_env('user_destroy_post', env=dict(os.environ))
+
+    if 'username' not in os.environ:
+        logging.error('Required environment variables missing, expecting: username')
+        exit(1)
 
     username = os.environ.get('username')
 
@@ -24,7 +26,11 @@ def main():
     except OSError:
         pass
 
-    # Run CloudLinux hooks
-    subprocess.check_call(['/usr/bin/da-removesudoer', username, 'cagefs_user'])
-    subprocess.check_call('/usr/share/cagefs-plugins/hooks/directadmin/user_destroy_post.sh')
-    subprocess.call(['/usr/bin/da_remove_admin', username])  # ignore result
+    try:
+        # Run CloudLinux hooks
+        subprocess.check_call(['/usr/bin/da-removesudoer', username, 'cagefs_user'])
+        subprocess.check_call('/usr/share/cagefs-plugins/hooks/directadmin/user_destroy_post.sh')
+        subprocess.call(['/usr/bin/da_remove_admin', username])  # ignore result
+    except subprocess.CalledProcessError as e:
+        utils.plog(logging.ERROR, e, exc_info=True)
+        logging.error(e)

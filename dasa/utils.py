@@ -5,8 +5,13 @@ import os
 import time
 
 
+def plog(lvl, msg, *args, **kwargs):
+    plogger = logging.getLogger('dasa.private')
+    return plogger.log(lvl, msg, *args, **kwargs)
+
+
 def log_with_env(message='dasa log env', env=None):
-    logging.log(logging.INFO, message, extra=env_to_log_extra_def(env))
+    logging.log(logging.DEBUG, message, extra=env_to_log_extra_def(env))
 
 
 def env_to_log_extra_def(env=None):

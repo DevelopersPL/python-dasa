@@ -1,12 +1,14 @@
+import logging
 import os
+
 from dasa import utils
 
 
 def fail_for_regular_use(message):
     # https: // www.directadmin.com / features.php?id = 1466
     if 'login_as_master_name' not in os.environ:
-        print('Modyfikowanie tych opcji SpamAssassin jest zablokowane.')
-        print(message)
+        logging.info('Modyfikowanie tych opcji SpamAssassin jest zablokowane.')
+        logging.info(message)
         exit(1)
 
 

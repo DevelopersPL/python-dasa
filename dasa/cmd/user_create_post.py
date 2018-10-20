@@ -1,3 +1,6 @@
+import requests
+
+import logging
 import os
 import errno
 import pwd
@@ -6,24 +9,30 @@ import subprocess
 
 from dasa import ciapi
 from dasa.config import config
-import dasa.utils as utils
+from dasa import utils
 
 
 def main():
     utils.log_with_env('user_create_post', env=dict(os.environ))
 
-    s = ciapi.get_session()
-    r = s.post(config.get('DEFAULT', 'api_base_url') + 'system/directadmin/user_create_post',
-               json=dict(os.environ),
-               timeout=config.getint('DEFAULT', 'api_timeout'))
+    try:
+        # Report to CIAPI
+        s = ciapi.get_session()
+        r = s.post(config.get('DEFAULT', 'api_base_url') + 'system/directadmin/user_create_post',
+                   json=dict(os.environ),
+                   timeout=config.getint('DEFAULT', 'api_timeout'))
 
-    if r.status_code == 404:
-        print(r.json().get('message'))
-        exit(0)
+        if r.status_code == 404:
+            logging.error(r.json().get('message'))
+            exit(0)
 
-    if r.status_code != 200:
-        print(r.json().get('message'))
-        exit(1)
+        if r.status_code != 200:
+            logging.error(r.json().get('message'))
+            exit(1)
+    except requests.exceptions.RequestException as e:
+        utils.plog(logging.ERROR, e, exc_info=True)
+        logging.error(e)
+        exit(2)
 
     daa = r.json()
 
@@ -75,7 +84,12 @@ def main():
                 raise
 
     # Apply LVE limits
-    subprocess.check_call(['/usr/sbin/lvectl', 'set-user', daa['username'], '--default=all'])
+    try:
+        subprocess.check_call(['/usr/sbin/lvectl', 'set-user', daa['username'], '--default=all'])
+    except subprocess.CalledProcessError as e:
+        utils.plog(logging.ERROR, e, exc_info=True)
+        logging.error(e)
+
     lve_line = ['/usr/sbin/lvectl', 'set-user', daa['username']]
     if daa['limit_lve_cpu']:
         lve_line.append('--speed=' + str(daa['limit_lve_cpu']) + '%')
@@ -92,13 +106,22 @@ def main():
     if daa['limit_lve_iops']:
         lve_line.append('--iops=' + str(daa['limit_lve_iops']))
     if len(lve_line) > 3:
-        subprocess.check_call(lve_line)
+        try:
+            subprocess.check_call(lve_line)
+        except subprocess.CalledProcessError as e:
+            utils.plog(logging.ERROR, e, exc_info=True)
+            logging.error(e)
 
     # Set PHP version
     if daa['php_version']:
         subprocess.check_call(['/usr/bin/selectorctl', '-u', daa['username'], '-b', daa['php_version']])
 
     # Run CloudLinux hooks
-    subprocess.check_call('/usr/share/cagefs-plugins/hooks/directadmin/user_create_post.sh')
-    subprocess.check_call(['/usr/bin/da-addsudoer', daa['username'], 'add_cagefs_user'])
-    subprocess.call(['/usr/bin/da_add_admin', daa['username']])  # ignore exit code because it's 1 for non-admins
+    try:
+        subprocess.check_call('/usr/share/cagefs-plugins/hooks/directadmin/user_create_post.sh')
+        subprocess.check_call(['/usr/bin/da-addsudoer', daa['username'], 'add_cagefs_user'])
+        subprocess.call(['/usr/bin/da_add_admin', daa['username']])  # ignore exit code because it's 1 for non-admins
+    except subprocess.CalledProcessError as e:
+        utils.plog(logging.ERROR, e, exc_info=True)
+        logging.error(e)
+        exit(2)
