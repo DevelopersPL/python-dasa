@@ -4,7 +4,6 @@ import logging
 import os
 
 from dasa import ciapi
-from dasa.config import config
 from dasa import utils
 
 
@@ -20,9 +19,7 @@ def main():
         old_domain = json['domain']
         json['domain'] = json['newdomain']
         del json['newdomain']
-        r = s.post(config.get('DEFAULT', 'api_base_url') + 'system/directadmin/domain_create_post',
-                   json=json,
-                   timeout=config.getint('DEFAULT', 'api_timeout'))
+        r = s.post('system/directadmin/domain_create_post', json=json)
 
         if r.status_code == 404:
             logging.info(r.json().get('message'))
@@ -34,9 +31,7 @@ def main():
 
         # domain_destroy_post for (old) domain
         json['domain'] = old_domain
-        r = s.post(config.get('DEFAULT', 'api_base_url') + 'system/directadmin/domain_destroy_post',
-                   json=json,
-                   timeout=config.getint('DEFAULT', 'api_timeout'))
+        r = s.post('system/directadmin/domain_destroy_post', json=json)
 
         if r.status_code == 404:
             logging.info(r.json().get('message'))
@@ -47,5 +42,5 @@ def main():
             exit(1)
     except requests.exceptions.RequestException as e:
         utils.plog(logging.ERROR, e, exc_info=True)
-        logging.error(e)
+        logging.error('Wystąpił błąd: %s' % e)
         exit(2)

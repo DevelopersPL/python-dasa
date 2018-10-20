@@ -33,4 +33,4 @@ def main():
         subprocess.call(['/usr/bin/da_remove_admin', username])  # ignore result
     except subprocess.CalledProcessError as e:
         utils.plog(logging.ERROR, e, exc_info=True)
-        logging.error(e)
+        logging.error('Wystąpił błąd: %s' % e)

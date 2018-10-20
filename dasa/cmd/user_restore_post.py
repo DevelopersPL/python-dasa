@@ -5,7 +5,6 @@ import os
 import subprocess
 
 from dasa import ciapi
-from dasa.config import config
 from dasa import utils
 
 
@@ -18,9 +17,7 @@ def main():
     try:
         # Report to CIAPI
         s = ciapi.get_session()
-        r = s.post(config.get('DEFAULT', 'api_base_url') + 'system/directadmin/user_restore_post',
-                   json=dict(os.environ),
-                   timeout=config.getint('DEFAULT', 'api_timeout'))
+        r = s.post('system/directadmin/user_restore_post', json=dict(os.environ))
 
         if r.status_code == 404:
             logging.info(r.json().get('message'))
@@ -31,5 +28,5 @@ def main():
             exit(1)
     except requests.exceptions.RequestException as e:
         utils.plog(logging.ERROR, e, exc_info=True)
-        logging.error(e)
+        logging.error('Wystąpił błąd: %s' % e)
         exit(2)

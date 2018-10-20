@@ -16,7 +16,7 @@ from dasa.config import os_connect
 from dasa.utils import LengthWrapper
 from dasa import utils
 
-segment_limit = 3 * 1024 * 1024 * 1024
+segment_limit = 5 * 1024 * 1024 * 1024
 
 
 def main():
@@ -108,20 +108,20 @@ def main():
     try:
         # Report to CIAPI
         s = ciapi.get_session()
-        r = s.post(config.get('DEFAULT', 'api_base_url') + 'system/directadmin/user_backup_post', json={
+        r = s.post('system/directadmin/user_backup_post', json={
             'username': user_name,
             'backup_filename': file_name,
             'backup_datetime': time_string,
             'backup_size': backup_info.st_size,
             'backup_path': user_name + '/' + time_string + '/' + file_name,
-        }, timeout=config.getint('DEFAULT', 'api_timeout'))
+        }, )
 
         if r.status_code != 200:
             logging.error(r.json().get('message', None))
             exit(1)
     except requests.exceptions.RequestException as e:
         utils.plog(logging.ERROR, e, exc_info=True)
-        logging.error(e)
+        logging.error('Wystąpił błąd: %s' % e)
         exit(2)
 
 

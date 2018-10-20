@@ -4,19 +4,17 @@ import logging
 import os
 
 from dasa import ciapi
-from dasa.config import config
 from dasa import utils
 
 
+# https://www.directadmin.com/features.php?id=1983
 def main():
     utils.log_with_env('domain_create_pre', env=dict(os.environ))
 
     try:
         # Report to CIAPI
         s = ciapi.get_session()
-        r = s.post(config.get('DEFAULT', 'api_base_url') + 'system/directadmin/domain_create_pre',
-                   json=dict(os.environ),
-                   timeout=config.getint('DEFAULT', 'api_timeout'))
+        r = s.post('system/directadmin/domain_create_pre', json=dict(os.environ))
 
         if r.status_code == 404:
             logging.info(r.json().get('message'))
@@ -27,5 +25,5 @@ def main():
             exit(1)
     except requests.exceptions.RequestException as e:
         utils.plog(logging.ERROR, e, exc_info=True)
-        logging.error(e)
+        logging.error('Wystąpił błąd: %s' % e)
         exit(2)

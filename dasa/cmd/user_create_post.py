@@ -8,7 +8,6 @@ import grp
 import subprocess
 
 from dasa import ciapi
-from dasa.config import config
 from dasa import utils
 
 
@@ -18,9 +17,7 @@ def main():
     try:
         # Report to CIAPI
         s = ciapi.get_session()
-        r = s.post(config.get('DEFAULT', 'api_base_url') + 'system/directadmin/user_create_post',
-                   json=dict(os.environ),
-                   timeout=config.getint('DEFAULT', 'api_timeout'))
+        r = s.post('system/directadmin/user_create_post', json=dict(os.environ))
 
         if r.status_code == 404:
             logging.error(r.json().get('message'))
@@ -31,7 +28,7 @@ def main():
             exit(1)
     except requests.exceptions.RequestException as e:
         utils.plog(logging.ERROR, e, exc_info=True)
-        logging.error(e)
+        logging.error('Wystąpił błąd: %s' % e)
         exit(2)
 
     daa = r.json()
@@ -88,7 +85,7 @@ def main():
         subprocess.check_call(['/usr/sbin/lvectl', 'set-user', daa['username'], '--default=all'])
     except subprocess.CalledProcessError as e:
         utils.plog(logging.ERROR, e, exc_info=True)
-        logging.error(e)
+        logging.error('Wystąpił błąd: %s' % e)
 
     lve_line = ['/usr/sbin/lvectl', 'set-user', daa['username']]
     if daa['limit_lve_cpu']:
@@ -110,7 +107,7 @@ def main():
             subprocess.check_call(lve_line)
         except subprocess.CalledProcessError as e:
             utils.plog(logging.ERROR, e, exc_info=True)
-            logging.error(e)
+            logging.error('Wystąpił błąd: %s' % e)
 
     # Set PHP version
     if daa['php_version']:
@@ -123,5 +120,5 @@ def main():
         subprocess.call(['/usr/bin/da_add_admin', daa['username']])  # ignore exit code because it's 1 for non-admins
     except subprocess.CalledProcessError as e:
         utils.plog(logging.ERROR, e, exc_info=True)
-        logging.error(e)
+        logging.error('Wystąpił błąd: %s' % e)
         exit(2)
