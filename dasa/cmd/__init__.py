@@ -26,6 +26,6 @@ plogger.propagate = False
 
 # configure logging for requests
 rlogger = logging.getLogger('requests.packages.urllib3')
-rlogger.setLevel(logging.DEBUG)
+rlogger.setLevel(logging.INFO)
 rlogger.addHandler(journal.JournalHandler(logging.DEBUG, SYSLOG_IDENTIFIER='dasa'))
 rlogger.propagate = False

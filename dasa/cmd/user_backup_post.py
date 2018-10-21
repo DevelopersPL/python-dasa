@@ -13,7 +13,6 @@ from retry.api import retry_call
 from dasa import ciapi
 from dasa.config import config
 from dasa.config import os_connect
-from dasa.utils import LengthWrapper
 from dasa import utils
 
 segment_limit = 5 * 1024 * 1024 * 1024
@@ -61,10 +60,12 @@ def main():
 
             # upload manifest
             c = os_connect()
-            obj = retry_call(c.object_store.upload_object, fkwargs={
+            obj = retry_call(c.object_store.create_object, fkwargs={
                 'container': config.get('DEFAULT', 'backups_container'),
                 'name': user_name + '/' + time_string + '/' + file_name + '?multipart-manifest=put',
-                'data': manifest_data}, tries=3)
+                'data': manifest_data,
+                'content_type': 'application/x-gzip'
+            }, tries=3)
         except Exception as e:
             # attempt to purge segments
             for o in uploaded_objs:
@@ -82,7 +83,8 @@ def main():
         c.object_store.set_object_metadata(obj,
                                            container=config.get('DEFAULT', 'backups_container'),
                                            username=user_name,
-                                           backup_time=time_string)
+                                           backup_time=time_string,
+                                           content_type='application/x-gzip')  # fix for upload_file()
     except HttpException:
         # We don't really need metadata that much, it's not worth aborting the whole backup
         pass
@@ -116,11 +118,20 @@ def upload_file(local, remote, start=None, limit=None):
     cn = config.get('DEFAULT', 'backups_container')
 
     with open(local, 'rb') as f:
+        size = os.path.getsize(local)
         if start is not None:
             f.seek(start)
+            size = size - start
         if limit is not None:
-            f = LengthWrapper(f, limit, md5=False)
+            f = utils.LengthWrapper(f, limit, md5=False)
+            size = max(size, limit)
 
         logging.info('Starting upload of ' + remote)
         c = os_connect()
-        return c.object_store.upload_object(container=cn, name=remote, data=f, content_type='application/x-gzip')
+        start_time = time.clock()
+        # content_type below does not seem to work, resulting content_type is text/html; charset=UTF-8
+        obj = c.object_store.create_object(container=cn, name=remote, data=f, content_type='application/x-gzip')
+        elapsed = time.clock() - start_time
+        size = utils.sizeof_fmt(size / elapsed)
+        logging.info('Upload of %s finished in %d seconds (%s)' % (remote, elapsed, size))
+        return obj
