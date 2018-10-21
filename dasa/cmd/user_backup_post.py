@@ -29,6 +29,7 @@ def main():
     def _upload_object(self, endpoint, filename, headers):
         return openstack._adapter._json_response(self.object_store.put(
             endpoint, headers=headers, data=open(filename, 'rb')))  # add 'b'
+
     openstack.cloud.openstackcloud._OpenStackCloudMixin._upload_object = _upload_object
 
     try:
@@ -42,12 +43,13 @@ def main():
                             'username': user_name,
                             'backup_time': time_string
                         },
+                        generate_checksums=False,
                         **{'content-type': 'application/x-gzip'})
 
         # Print timing
         elapsed = time.clock() - start_time
         size = utils.sizeof_fmt(backup_info.st_size / elapsed)
-        logging.info('Upload of %s finished in %d seconds (%s/s)' % (file_name, elapsed, size))
+        logging.info('Swift upload of %s finished in %d seconds (%s/s)' % (file_name, elapsed, size))
 
         # Remove local backup file now
         os.remove(os.environ.get('file'))
