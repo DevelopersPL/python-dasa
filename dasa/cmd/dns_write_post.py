@@ -7,6 +7,7 @@ from dasa import ciapi
 from dasa import utils
 
 
+# https://www.directadmin.com/features.php?id=450
 def main():
     utils.log_with_env('dns_write_post', env=dict(os.environ))
     if 'DOMAIN' not in os.environ:

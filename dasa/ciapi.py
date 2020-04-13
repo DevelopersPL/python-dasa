@@ -4,7 +4,10 @@ from dasa.config import config
 
 def get_session():
     s = SessionWithUrlBase(url_base=config.get('DEFAULT', 'api_base_url'))
-    s.headers.update({'X-DASA-Key': config.get('DEFAULT', 'api_key')})
+    s.headers.update({
+        'X-DASA-Key': config.get('DEFAULT', 'api_key'),
+        'Accept': 'application/json',
+    })
     return s
 
 
