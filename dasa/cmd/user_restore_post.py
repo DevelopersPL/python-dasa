@@ -11,9 +11,6 @@ from dasa import utils
 def main():
     utils.log_with_env('user_restore_post', env=dict(os.environ))
 
-    # Run CloudLinux hooks
-    subprocess.call('/usr/share/cagefs-plugins/hooks/directadmin/user_restore_post.sh')  # ignore result
-
     try:
         # Report to CIAPI
         s = ciapi.get_session()

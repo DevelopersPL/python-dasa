@@ -19,12 +19,3 @@ def main():
 
     # Apply block_emails_all
     utils.file_ensure_da_user('/etc/virtual/blacklist_usernames', username, False)
-
-    try:
-        # Run CloudLinux hooks
-        subprocess.check_call(['/usr/bin/da-removesudoer', username, 'cagefs_user'])
-        subprocess.check_call('/usr/share/cagefs-plugins/hooks/directadmin/user_destroy_post.sh')
-        subprocess.call(['/usr/bin/da_remove_admin', username])  # ignore result
-    except subprocess.CalledProcessError as e:
-        utils.plog(logging.ERROR, e, exc_info=True)
-        logging.error('Wystąpił błąd: %s' % e)

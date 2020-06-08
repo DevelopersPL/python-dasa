@@ -94,13 +94,3 @@ def main():
     # Set PHP version
     if daa['php_version']:
         subprocess.check_call(['/usr/bin/selectorctl', '-u', daa['username'], '-b', daa['php_version']])
-
-    # Run CloudLinux hooks
-    try:
-        subprocess.check_call('/usr/share/cagefs-plugins/hooks/directadmin/user_create_post.sh')
-        subprocess.check_call(['/usr/bin/da-addsudoer', daa['username'], 'add_cagefs_user'])
-        subprocess.call(['/usr/bin/da_add_admin', daa['username']])  # ignore exit code because it's 1 for non-admins
-    except subprocess.CalledProcessError as e:
-        utils.plog(logging.ERROR, e, exc_info=True)
-        logging.error('Wystąpił błąd: %s' % e)
-        exit(2)
