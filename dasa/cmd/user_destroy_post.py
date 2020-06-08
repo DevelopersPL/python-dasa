@@ -20,12 +20,6 @@ def main():
     # Apply block_emails_all
     utils.file_ensure_da_user('/etc/virtual/blacklist_usernames', username, False)
 
-    # Apply limit_emails
-    try:
-        os.remove('/etc/virtual/limit_' + username)
-    except OSError:
-        pass
-
     try:
         # Run CloudLinux hooks
         subprocess.check_call(['/usr/bin/da-removesudoer', username, 'cagefs_user'])
