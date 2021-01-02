@@ -10,6 +10,7 @@ config = configparser.ConfigParser({
     'api_timeout': '5',
     'backups_container': 'da-backups',
     'os_cloud': 'ovh',
+    'source_address': None,
 })
 config.read('/etc/dasa.ini')
 
@@ -23,7 +24,8 @@ def _construct_session(session_obj=None):
         session_obj = requests.Session()
         # Use TCPKeepAliveAdapter to fix bug 1323862
         for scheme in list(session_obj.adapters):
-            session_obj.mount(scheme, TCPKeepAliveAdapter(max_retries=5))
+            session_obj.mount(scheme, TCPKeepAliveAdapter(max_retries=5,
+                                                          source_address=config.get('DEFAULT', 'source_address')))
     return session_obj
 
 
