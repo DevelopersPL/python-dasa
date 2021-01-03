@@ -24,8 +24,9 @@ def _construct_session(session_obj=None):
         session_obj = requests.Session()
         # Use TCPKeepAliveAdapter to fix bug 1323862
         for scheme in list(session_obj.adapters):
-            session_obj.mount(scheme, TCPKeepAliveAdapter(max_retries=5,
-                                                          source_address=config.get('DEFAULT', 'source_address')))
+            session_obj.mount(scheme, TCPKeepAliveSourceAddressAdapter(max_retries=5,
+                                                                       source_address=config.get('DEFAULT',
+                                                                                                 'source_address')))
     return session_obj
 
 
@@ -34,3 +35,19 @@ def os_connect():
     keystoneauth1.session._construct_session = _construct_session
     c = from_config(config.get('DEFAULT', 'os_cloud'))
     return c
+
+
+class TCPKeepAliveSourceAddressAdapter(TCPKeepAliveAdapter):
+    source_address = None
+
+    def __init__(self, **kwargs):
+        if 'source_address' in kwargs:
+            self.source_address = kwargs['source_address']
+            del kwargs['source_address']
+
+        super(TCPKeepAliveSourceAddressAdapter, self).__init__(**kwargs)
+
+    def init_poolmanager(self, *args, **kwargs):
+        super(TCPKeepAliveSourceAddressAdapter, self).init_poolmanager(*args,
+                                                                       source_address=(self.source_address, 0),
+                                                                       **kwargs)
