@@ -48,6 +48,7 @@ class TCPKeepAliveSourceAddressAdapter(TCPKeepAliveAdapter):
         super(TCPKeepAliveSourceAddressAdapter, self).__init__(**kwargs)
 
     def init_poolmanager(self, *args, **kwargs):
-        super(TCPKeepAliveSourceAddressAdapter, self).init_poolmanager(*args,
-                                                                       source_address=(self.source_address, 0),
-                                                                       **kwargs)
+        super(TCPKeepAliveSourceAddressAdapter, self) \
+            .init_poolmanager(*args,
+                              source_address=(self.source_address, 0) if self.source_address else None,
+                              **kwargs)
