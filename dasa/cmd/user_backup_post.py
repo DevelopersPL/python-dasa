@@ -1,5 +1,3 @@
-import openstack
-
 import logging
 import os
 import time
@@ -24,13 +22,6 @@ def main():
     time_string = time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime(backup_info.st_mtime))
     file_name = os.path.basename(os.environ.get('file'))
     user_name = os.environ.get('username')
-
-    # monkey patch this crap
-    def _upload_object(self, endpoint, filename, headers):
-        return openstack._adapter._json_response(self.object_store.put(
-            endpoint, headers=headers, data=open(filename, 'rb')))  # add 'b'
-
-    openstack.cloud.openstackcloud._OpenStackCloudMixin._upload_object = _upload_object
 
     try:
         c = os_connect()
