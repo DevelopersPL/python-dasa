@@ -2,7 +2,6 @@ import requests
 
 import logging
 import os
-import errno
 import pwd
 import grp
 import subprocess
@@ -36,7 +35,7 @@ def main():
     # Ensure SpamAssassin settings exist
     if 'user_creation' in os.environ and os.environ['user_creation'] == '1':
         if not os.path.isdir('/home/' + daa['username'] + '/.spamassassin'):
-            os.mkdir('/home/' + daa['username'] + '/.spamassassin', 0x771)
+            os.mkdir('/home/' + daa['username'] + '/.spamassassin', 0o771)
             uid = pwd.getpwnam(daa['username']).pw_uid
             gid = grp.getgrnam('mail').gr_gid
             os.chown('/home/' + daa['username'] + '/.spamassassin', uid, gid)  # $username:mail
