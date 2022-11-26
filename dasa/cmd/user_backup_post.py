@@ -2,6 +2,7 @@ import logging
 import os
 import time
 
+from fabric import Connection
 from openstack.cloud._object_store import ObjectStoreCloudMixin
 from six.moves import urllib_parse
 
@@ -27,7 +28,7 @@ def main():
     user_name = os.environ.get('username')
 
     try:
-        if config.get('DEFAULT', 'backups_upload'):
+        if config.get('DEFAULT', 'backups_upload_swift'):
             c = os_connect()
             start_time = time.clock()
             c.create_object(container=config.get('DEFAULT', 'backups_container'),
@@ -46,9 +47,27 @@ def main():
             size = utils.sizeof_fmt(backup_info.st_size / elapsed)
             logging.info('Swift upload of %s finished in %d seconds (%s/s)' % (file_name, elapsed, size))
 
+        if config.get('DEFAULT', 'backups_upload_ssh'):
+            start_time = time.clock()
+            with Connection(config.get('DEFAULT', 'backups_ssh_host')) as c:
+                c.put(os.environ.get('file'), remote=config.get('DEFAULT', 'backups_ssh_path'))
+
+            # Print timing
+            elapsed = time.clock() - start_time
+            size = utils.sizeof_fmt(backup_info.st_size / elapsed)
+            logging.info('SSH upload of %s finished in %d seconds (%s/s)' % (file_name, elapsed, size))
+
         if config.get('DEFAULT', 'backups_remove_local'):
             # Remove local backup file now
             os.remove(os.environ.get('file'))
+
+        # Read log file if available
+        log_file_content = None
+        try:
+            with open(config.get('DEFAULT', 'backups_post_log_file'), 'r') as f:
+                log_file_content = f.read()
+        except OSError:
+            pass
 
         # Report to CIAPI
         s = ciapi.get_session()
@@ -59,6 +78,7 @@ def main():
             'backup_size': backup_info.st_size,
             'backup_path': user_name + '/' + time_string + '/' + file_name,
             'container': config.get('DEFAULT', 'backups_container'),
+            'log': log_file_content,
         }, )
 
         if r.status_code != 200:
