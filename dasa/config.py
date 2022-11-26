@@ -9,6 +9,8 @@ config = configparser.ConfigParser({
     'api_key': 'abcdef',
     'api_timeout': '5',
     'backups_container': 'da-backups',
+    'backups_remove_local': True,
+    'backups_upload': False,
     'os_cloud': 'ovh',
     'source_address': None,
 })

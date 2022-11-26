@@ -27,26 +27,28 @@ def main():
     user_name = os.environ.get('username')
 
     try:
-        c = os_connect()
-        start_time = time.clock()
-        c.create_object(container=config.get('DEFAULT', 'backups_container'),
-                        name=user_name + '/' + time_string + '/' + file_name,
-                        filename=os.environ.get('file'),
-                        segment_size=segment_limit,  # optional, should auto-discover
-                        metadata={
-                            'username': user_name,
-                            'backup_time': time_string
-                        },
-                        generate_checksums=False,
-                        **{'content-type': 'application/x-gzip'})
+        if config.get('DEFAULT', 'backups_upload'):
+            c = os_connect()
+            start_time = time.clock()
+            c.create_object(container=config.get('DEFAULT', 'backups_container'),
+                            name=user_name + '/' + time_string + '/' + file_name,
+                            filename=os.environ.get('file'),
+                            segment_size=segment_limit,  # optional, should auto-discover
+                            metadata={
+                                'username': user_name,
+                                'backup_time': time_string
+                            },
+                            generate_checksums=False,
+                            **{'content-type': 'application/x-gzip'})
 
-        # Print timing
-        elapsed = time.clock() - start_time
-        size = utils.sizeof_fmt(backup_info.st_size / elapsed)
-        logging.info('Swift upload of %s finished in %d seconds (%s/s)' % (file_name, elapsed, size))
+            # Print timing
+            elapsed = time.clock() - start_time
+            size = utils.sizeof_fmt(backup_info.st_size / elapsed)
+            logging.info('Swift upload of %s finished in %d seconds (%s/s)' % (file_name, elapsed, size))
 
-        # Remove local backup file now
-        os.remove(os.environ.get('file'))
+        if config.get('DEFAULT', 'backups_remove_local'):
+            # Remove local backup file now
+            os.remove(os.environ.get('file'))
 
         # Report to CIAPI
         s = ciapi.get_session()
