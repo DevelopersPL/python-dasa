@@ -28,7 +28,7 @@ def main():
     user_name = os.environ.get('username')
 
     try:
-        if config.get('DEFAULT', 'backups_upload_swift'):
+        if config.getboolean('DEFAULT', 'backups_upload_swift'):
             c = os_connect()
             start_time = time.clock()
             c.create_object(container=config.get('DEFAULT', 'backups_container'),
@@ -47,7 +47,7 @@ def main():
             size = utils.sizeof_fmt(backup_info.st_size / elapsed)
             logging.info('Swift upload of %s finished in %d seconds (%s/s)' % (file_name, elapsed, size))
 
-        if config.get('DEFAULT', 'backups_upload_ssh'):
+        if config.getboolean('DEFAULT', 'backups_upload_ssh'):
             start_time = time.clock()
             with Connection(config.get('DEFAULT', 'backups_ssh_host')) as c:
                 c.put(os.environ.get('file'), remote=config.get('DEFAULT', 'backups_ssh_path'))
@@ -57,7 +57,7 @@ def main():
             size = utils.sizeof_fmt(backup_info.st_size / elapsed)
             logging.info('SSH upload of %s finished in %d seconds (%s/s)' % (file_name, elapsed, size))
 
-        if config.get('DEFAULT', 'backups_remove_local'):
+        if config.getboolean('DEFAULT', 'backups_remove_local'):
             # Remove local backup file now
             os.remove(os.environ.get('file'))
 
