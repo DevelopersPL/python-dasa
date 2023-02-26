@@ -69,21 +69,22 @@ def main():
         except OSError:
             pass
 
-        # Report to CIAPI
-        s = ciapi.get_session()
-        r = s.post('system/directadmin/user_backup_post', json={
-            'username': user_name,
-            'backup_filename': file_name,
-            'backup_datetime': time_string,
-            'backup_size': backup_info.st_size,
-            'backup_path': user_name + '/' + time_string + '/' + file_name,
-            'container': config.get('DEFAULT', 'backups_container'),
-            'log': log_file_content,
-        }, )
+        if config.getboolean('DEFAULT', 'backups_post_ciapi'):
+            # Report to CIAPI
+            s = ciapi.get_session()
+            r = s.post('system/directadmin/user_backup_post', json={
+                'username': user_name,
+                'backup_filename': file_name,
+                'backup_datetime': time_string,
+                'backup_size': backup_info.st_size,
+                'backup_path': user_name + '/' + time_string + '/' + file_name,
+                'container': config.get('DEFAULT', 'backups_container'),
+                'log': log_file_content,
+            }, )
 
-        if r.status_code != 200:
-            logging.error(r.json().get('message', None))
-            exit(1)
+            if r.status_code != 200:
+                logging.error(r.json().get('message', None))
+                exit(1)
     except Exception as e:
         utils.plog(logging.ERROR, e, exc_info=True)
         if hasattr(e, 'response'):

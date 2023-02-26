@@ -8,6 +8,7 @@ config = configparser.ConfigParser({
     'api_base_url': 'https://example.com/api/',
     'api_key': 'abcdef',
     'api_timeout': '5',
+    'backups_post_ciapi': True,
     'backups_post_log_file': None,
     'backups_container': 'da-backups',
     'backups_remove_local': False,
@@ -17,6 +18,9 @@ config = configparser.ConfigParser({
     'backups_ssh_path': '',
     'os_cloud': 'ovh',
     'source_address': None,
+    'borg_enabled': False,
+    'borg_passphrase': None,
+    'borg_repo_prefix': 'ssh://borg/~/borg/',
 })
 config.read('/etc/dasa.ini')
 
