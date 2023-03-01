@@ -1,3 +1,4 @@
+import json
 import requests
 
 import logging
@@ -22,7 +23,7 @@ def main():
         if r.status_code != 200:
             logging.info(r.json().get('message'))
             exit(1)
-    except requests.exceptions.RequestException as e:
+    except (requests.exceptions.RequestException, json.decoder.JSONDecodeError) as e:
         utils.plog(logging.ERROR, e, exc_info=True)
         logging.error('Wystąpił błąd: %s' % e)
         exit(0)  # NON FATAL - DON'T BLOCK THE BACKUP

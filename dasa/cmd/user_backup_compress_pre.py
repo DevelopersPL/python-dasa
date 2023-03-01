@@ -2,6 +2,7 @@ import json
 import logging
 import os
 import subprocess
+import requests
 
 from dasa import ciapi
 from dasa.config import config
@@ -55,23 +56,31 @@ def main():
         logging.error(f'borg backup failed for {username}: {borg_create.stderr}')
         exit(1)
 
-    # Report CREATE to CIAPI
-    s = ciapi.get_session()
-    r = s.post('system/directadmin/user_backup_compress_pre', json={
-        'username': username,
-        'borg': json.loads(borg_create.stdout),
-    })
+    try:
+        # Report CREATE to CIAPI
+        s = ciapi.get_session()
+        r = s.post('system/directadmin/user_backup_compress_pre', json={
+            'username': username,
+            'borg': json.loads(borg_create.stdout),
+        })
 
-    if r.status_code != 200:
-        logging.error(dict(r.json()).get('message', None))
+        if r.status_code != 200:
+            logging.error(dict(r.json()).get('message', None))
 
-    response = dict(r.json())
+        response = dict(r.json())
+    except (requests.exceptions.RequestException, json.decoder.JSONDecodeError) as e:
+        utils.plog(logging.ERROR, e, exc_info=True)
+        logging.error('Wystąpił błąd: %s' % e)
+        response = {}
 
     # PRUNE
     logging.info(f'running borg prune for {username}...')
     borg_prune = subprocess.run([
         'borg', 'prune', '-v', '--stats',
         '--glob-archives', f'{username}_*',
+        f"--keep-within={response.get('keep_within', '1h')}",
+        f"--keep-last={response.get('keep_last', 7)}",
+        f"--keep-minutely={response.get('keep_minutely', 0)}",
         f"--keep-hourly={response.get('keep_hourly', 0)}",
         f"--keep-daily={response.get('keep_daily', 7)}",
         f"--keep-weekly={response.get('keep_weekly', 4)}",
@@ -115,9 +124,13 @@ def main():
         else:
             logging.error(f'borg list failed for {username}::{archive}: {borg_info.stderr}')
 
-    r = s.post('system/directadmin/borg-archives', json={
-        'username': username,
-        'borg-archives': archives,
-    })
-    if r.status_code != 200:
-        logging.error(dict(r.json()).get('message', None))
+    try:
+        r = s.post('system/directadmin/borg-archives', json={
+            'username': username,
+            'borg-archives': archives,
+        })
+        if r.status_code != 200:
+            logging.error(dict(r.json()).get('message', None))
+    except (requests.exceptions.RequestException, json.decoder.JSONDecodeError) as e:
+        utils.plog(logging.ERROR, e, exc_info=True)
+        logging.error('Wystąpił błąd: %s' % e)
