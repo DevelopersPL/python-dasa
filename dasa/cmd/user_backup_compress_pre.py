@@ -25,6 +25,7 @@ def main():
     os.environ.update({
         'BORG_PASSPHRASE': config.get('DEFAULT', 'borg_passphrase'),
         'BORG_REPO': f"{prefix}{username}",
+        'TZ': 'UTC',
     })
 
     logging.info(f'running init create for {username}...')
