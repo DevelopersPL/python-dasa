@@ -1,7 +1,5 @@
 import requests
-from requests import HTTPAdapter
-# Python 2 compatibility
-from requests.packages.urllib3.util.retry import Retry
+from requests.adapters import HTTPAdapter, Retry
 
 from dasa.config import config
 
