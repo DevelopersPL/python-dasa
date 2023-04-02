@@ -79,7 +79,7 @@ def main():
     borg_prune = subprocess.run([
         'borg', 'prune', '-v', '--stats',
         '--glob-archives', f'{username}_*',
-        f"--keep-within={response.get('keep_within', '1h')}",
+        f"--keep-within={response.get('keep_within', '1H')}",
         f"--keep-last={response.get('keep_last', 7)}",
         f"--keep-minutely={response.get('keep_minutely', 0)}",
         f"--keep-hourly={response.get('keep_hourly', 0)}",
