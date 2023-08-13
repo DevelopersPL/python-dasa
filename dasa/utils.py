@@ -2,6 +2,7 @@ import hashlib
 import fileinput
 import logging
 import os
+import re
 import time
 
 
@@ -20,6 +21,8 @@ def env_to_log_extra_def(env=None):
 
     journal_extra = {}
     for k, v in env.items():
+        # JournalD accepts only uppercase alphanumeric keys
+        k = re.sub(r'[^A-Z0-9]+', '_', k.upper())
         journal_extra['DA_HOOK_ENV_' + k] = v
     return journal_extra
 
