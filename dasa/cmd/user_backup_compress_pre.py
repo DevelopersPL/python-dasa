@@ -41,6 +41,7 @@ def main():
     logging.info(f'running borg create for {username}...')
     borg_create = subprocess.run([
         'borg', 'create', '--json', '--sparse', '--one-file-system', '--exclude-caches',
+        '--compression', 'zstd',
         '-e', f'/home/{username}/backups',
         '-e', f'/home/{username}/.trash',
         '-e', f'/home/{username}/.cache',
