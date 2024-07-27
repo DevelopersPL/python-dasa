@@ -50,6 +50,7 @@ def main():
         '-e', f'backup/home.tar*',
         '-e', f'domains/',  # usually not present unless DA backup didn't exclude domain data
         '-e', f'imap/',  # usually not present unless DA backup didn't exclude email data
+        '-e', f'*/wp-content/cache',
         f'::{username}_{{now:%Y-%m-%dT%H:%M:%S}}',
         '.', f'/home/{username}',
     ], universal_newlines=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
