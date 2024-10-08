@@ -30,7 +30,7 @@ def main():
     try:
         if config.getboolean('DEFAULT', 'backups_upload_swift'):
             c = os_connect()
-            start_time = time.clock()
+            start_time = time.perf_counter()
             c.create_object(container=config.get('DEFAULT', 'backups_container'),
                             name=user_name + '/' + time_string + '/' + file_name,
                             filename=os.environ.get('file'),
@@ -43,17 +43,17 @@ def main():
                             **{'content-type': 'application/x-gzip'})
 
             # Print timing
-            elapsed = time.clock() - start_time
+            elapsed = time.perf_counter() - start_time
             size = utils.sizeof_fmt(backup_info.st_size / elapsed)
             logging.info('Swift upload of %s finished in %d seconds (%s/s)' % (file_name, elapsed, size))
 
         if config.getboolean('DEFAULT', 'backups_upload_ssh'):
-            start_time = time.clock()
+            start_time = time.perf_counter()
             with Connection(config.get('DEFAULT', 'backups_ssh_host')) as c:
                 c.put(os.environ.get('file'), remote=config.get('DEFAULT', 'backups_ssh_path'))
 
             # Print timing
-            elapsed = time.clock() - start_time
+            elapsed = time.perf_counter() - start_time
             size = utils.sizeof_fmt(backup_info.st_size / elapsed)
             logging.info('SSH upload of %s finished in %d seconds (%s/s)' % (file_name, elapsed, size))
 
