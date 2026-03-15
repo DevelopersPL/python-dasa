@@ -13,6 +13,14 @@ def get_session():
     return s
 
 
+def get_message(response):
+    """Safely extract 'message' from a JSON response, returning raw text on decode failure."""
+    try:
+        return response.json().get('message')
+    except (ValueError, AttributeError):
+        return response.text[:500]
+
+
 # https://stackoverflow.com/a/43882437
 class SessionWithUrlBase(requests.Session):
     # In Python 3 you could place `url_base` after `*args`, but not in Python 2.

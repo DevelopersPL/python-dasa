@@ -83,7 +83,7 @@ def main():
             }, )
 
             if r.status_code != 200:
-                logging.error(r.json().get('message', None))
+                logging.error(ciapi.get_message(r))
                 exit(1)
     except Exception as e:
         utils.plog(logging.ERROR, e, exc_info=True)

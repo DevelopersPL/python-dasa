@@ -69,9 +69,12 @@ def main():
         })
 
         if r.status_code != 200:
-            logging.error(dict(r.json()).get('message', None))
+            logging.error(ciapi.get_message(r))
 
-        response = dict(r.json())
+        try:
+            response = dict(r.json())
+        except (ValueError, AttributeError):
+            response = {}
     except (requests.exceptions.RequestException, json.decoder.JSONDecodeError) as e:
         utils.plog(logging.ERROR, e, exc_info=True)
         logging.error('Wystąpił błąd: %s' % e)
@@ -134,7 +137,7 @@ def main():
             'borg-archives': archives,
         })
         if r.status_code != 200:
-            logging.error(dict(r.json()).get('message', None))
+            logging.error(ciapi.get_message(r))
     except (requests.exceptions.RequestException, json.decoder.JSONDecodeError) as e:
         utils.plog(logging.ERROR, e, exc_info=True)
         logging.error('Wystąpił błąd: %s' % e)

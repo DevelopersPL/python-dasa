@@ -19,18 +19,22 @@ def main():
         r = s.post('system/directadmin/user_create_post', json=dict(os.environ))
 
         if r.status_code == 404:
-            logging.error(r.json().get('message'))
+            logging.error(ciapi.get_message(r))
             exit(0)
 
         if r.status_code != 200:
-            logging.error(r.json().get('message'))
+            logging.error(ciapi.get_message(r))
             exit(1)
-    except requests.exceptions.RequestException as e:
+    except (requests.exceptions.RequestException, ValueError) as e:
         utils.plog(logging.ERROR, e, exc_info=True)
         logging.error('Wystąpił błąd: %s' % e)
         exit(2)
 
-    daa = r.json()
+    try:
+        daa = r.json()
+    except ValueError as e:
+        logging.error('Invalid JSON response from CIAPI: %s' % e)
+        exit(1)
 
     # Ensure SpamAssassin settings exist
     if 'user_creation' in os.environ and os.environ['user_creation'] == '1':

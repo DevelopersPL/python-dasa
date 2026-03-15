@@ -16,13 +16,13 @@ def main():
         r = s.post('system/directadmin/user_activate_post', json=dict(os.environ))
 
         if r.status_code == 404:
-            logging.info(r.json().get('message'))
+            logging.info(ciapi.get_message(r))
             exit(0)
 
         if r.status_code != 200:
-            logging.info(r.json().get('message'))
+            logging.info(ciapi.get_message(r))
             exit(1)
-    except requests.exceptions.RequestException as e:
+    except (requests.exceptions.RequestException, ValueError) as e:
         utils.plog(logging.ERROR, e, exc_info=True)
         logging.error('Wystąpił błąd: %s' % e)
         exit(2)

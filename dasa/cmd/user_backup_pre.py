@@ -17,11 +17,11 @@ def main():
         r = s.post('system/directadmin/user_backup_pre', json=dict(os.environ))
 
         if r.status_code == 404:
-            logging.info(r.json().get('message'))
+            logging.info(ciapi.get_message(r))
             exit(0)
 
         if r.status_code != 200:
-            logging.info(r.json().get('message'))
+            logging.info(ciapi.get_message(r))
             exit(1)
     except (requests.exceptions.RequestException, json.decoder.JSONDecodeError) as e:
         utils.plog(logging.ERROR, e, exc_info=True)
