@@ -25,5 +25,5 @@ def main():
             exit(1)
     except (requests.exceptions.RequestException, ValueError) as e:
         utils.plog(logging.ERROR, e, exc_info=True)
-        logging.error('Wystąpił błąd: %s' % e)
-        exit(2)
+        logging.warning('API niedostępne, kontynuowanie tworzenia domeny: %s' % e)
+        exit(0)
