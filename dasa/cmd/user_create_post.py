@@ -58,4 +58,12 @@ def main():
                 uid = pwd.getpwnam('mail').pw_uid
                 os.chown('/home/' + daa['username'] + '/.spamassassin/spam', uid, gid)  # mail:$username
 
-    account.apply_state(daa)
+    try:
+        applied = account.apply_state(daa)
+    except account.IncompleteState as e:
+        utils.plog(logging.ERROR, e)
+        logging.error('Wystąpił błąd: %s' % e)
+        exit(1)
+
+    if not applied:
+        exit(1)

@@ -27,7 +27,9 @@ class SessionWithUrlBase(requests.Session):
     def __init__(self, url_base=None, *args, **kwargs):
         super(SessionWithUrlBase, self).__init__(*args, **kwargs)
         self.url_base = url_base
-        self.retries = Retry(total=5, backoff_factor=0.1, status_forcelist=[500, 502, 503, 504])
+        # 429 is retried too: the hook endpoints answer with account state the box has
+        # to apply, and a throttled request would otherwise drop that state silently.
+        self.retries = Retry(total=5, backoff_factor=0.1, status_forcelist=[429, 500, 502, 503, 504])
 
     def request(self, method, url, **kwargs):
         # Next line of code is here for example purposes only.

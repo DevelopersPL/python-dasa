@@ -34,4 +34,12 @@ def main():
         logging.error('Invalid JSON response from CIAPI: %s' % e)
         exit(1)
 
-    account.apply_state(daa)
+    try:
+        applied = account.apply_state(daa)
+    except account.IncompleteState as e:
+        utils.plog(logging.ERROR, e)
+        logging.error('Wystąpił błąd: %s' % e)
+        exit(1)
+
+    if not applied:
+        exit(1)
