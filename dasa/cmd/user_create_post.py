@@ -36,6 +36,13 @@ def main():
         logging.error('Invalid JSON response from CIAPI: %s' % e)
         exit(1)
 
+    try:
+        account.validate_state(daa)
+    except account.IncompleteState as e:
+        utils.plog(logging.ERROR, e)
+        logging.error('Wystąpił błąd: %s' % e)
+        exit(1)
+
     # Ensure SpamAssassin settings exist
     if 'user_creation' in os.environ and os.environ['user_creation'] == '1':
         if not os.path.isdir('/home/' + daa['username'] + '/.spamassassin'):

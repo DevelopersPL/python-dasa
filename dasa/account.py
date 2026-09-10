@@ -36,6 +36,13 @@ class IncompleteState(Exception):
     """CIAPI answered without the full account state, so nothing was applied."""
 
 
+def validate_state(daa):
+    """Raise IncompleteState when CIAPI omitted account state fields."""
+    missing = [field for field in REQUIRED_FIELDS if field not in daa]
+    if missing:
+        raise IncompleteState('CIAPI response is missing: %s' % ', '.join(missing))
+
+
 def apply_state(daa):
     """Apply the account state reported by CIAPI: mail blacklists, LVE limits, PHP version.
 
@@ -46,9 +53,7 @@ def apply_state(daa):
     Returns False when a command ran and failed, so the hook can exit non-zero
     instead of reporting success over a stale limit.
     """
-    missing = [field for field in REQUIRED_FIELDS if field not in daa]
-    if missing:
-        raise IncompleteState('CIAPI response is missing: %s' % ', '.join(missing))
+    validate_state(daa)
 
     username = daa['username']
 
