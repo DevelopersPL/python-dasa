@@ -1,0 +1,45 @@
+import requests
+
+import logging
+import os
+
+from dasa import account
+from dasa import ciapi
+from dasa import utils
+
+
+def main():
+    utils.log_with_env('user_modify_post', env=dict(os.environ))
+
+    try:
+        # Report to CIAPI
+        s = ciapi.get_session()
+        r = s.post('system/directadmin/user_modify_post', json=dict(os.environ))
+
+        if r.status_code == 404:
+            logging.info(ciapi.get_message(r))
+            exit(0)
+
+        if r.status_code != 200:
+            logging.error(ciapi.get_message(r))
+            exit(1)
+    except (requests.exceptions.RequestException, ValueError) as e:
+        utils.plog(logging.ERROR, e, exc_info=True)
+        logging.error('Wystąpił błąd: %s' % e)
+        exit(2)
+
+    try:
+        daa = r.json()
+    except ValueError as e:
+        logging.error('Invalid JSON response from CIAPI: %s' % e)
+        exit(1)
+
+    try:
+        applied = account.apply_state(daa)
+    except account.IncompleteState as e:
+        utils.plog(logging.ERROR, e)
+        logging.error('Wystąpił błąd: %s' % e)
+        exit(1)
+
+    if not applied:
+        exit(1)

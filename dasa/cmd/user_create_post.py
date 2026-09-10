@@ -4,8 +4,8 @@ import logging
 import os
 import pwd
 import grp
-import subprocess
 
+from dasa import account
 from dasa import ciapi
 from dasa import utils
 
@@ -36,6 +36,13 @@ def main():
         logging.error('Invalid JSON response from CIAPI: %s' % e)
         exit(1)
 
+    try:
+        account.validate_state(daa)
+    except account.IncompleteState as e:
+        utils.plog(logging.ERROR, e)
+        logging.error('Wystąpił błąd: %s' % e)
+        exit(1)
+
     # Ensure SpamAssassin settings exist
     if 'user_creation' in os.environ and os.environ['user_creation'] == '1':
         if not os.path.isdir('/home/' + daa['username'] + '/.spamassassin'):
@@ -58,42 +65,12 @@ def main():
                 uid = pwd.getpwnam('mail').pw_uid
                 os.chown('/home/' + daa['username'] + '/.spamassassin/spam', uid, gid)  # mail:$username
 
-    # Apply block_emails_scripts
-    # https://help.directadmin.com/item.php?id=655
-    utils.file_ensure_da_user('/etc/virtual/blacklist_script_usernames', daa['username'], daa['block_emails_scripts'])
-
-    # Apply block_emails_all
-    utils.file_ensure_da_user('/etc/virtual/blacklist_usernames', daa['username'], daa['block_emails_all'])
-
-    # Apply LVE limits
     try:
-        subprocess.check_call(['/usr/sbin/lvectl', 'set-user', daa['username'], '--default=all'])
-    except subprocess.CalledProcessError as e:
-        utils.plog(logging.ERROR, e, exc_info=True)
+        applied = account.apply_state(daa)
+    except account.IncompleteState as e:
+        utils.plog(logging.ERROR, e)
         logging.error('Wystąpił błąd: %s' % e)
+        exit(1)
 
-    lve_line = ['/usr/sbin/lvectl', 'set-user', daa['username']]
-    if daa['limit_lve_cpu']:
-        lve_line.append('--speed=' + str(daa['limit_lve_cpu']) + '%')
-    if daa['limit_lve_pmem']:
-        lve_line.append('--pmem=' + str(daa['limit_lve_pmem']) + 'M')
-    if daa['limit_lve_io']:
-        lve_line.append('--io=' + str(daa['limit_lve_io']))
-    if daa['limit_lve_iops']:
-        lve_line.append('--iops=' + str(daa['limit_lve_iops']))
-    if daa['limit_lve_ep']:
-        lve_line.append('--maxEntryProcs=' + str(daa['limit_lve_ep']))
-    if daa['limit_lve_nproc']:
-        lve_line.append('--nproc=' + str(daa['limit_lve_nproc']))
-    if daa['limit_lve_iops']:
-        lve_line.append('--iops=' + str(daa['limit_lve_iops']))
-    if len(lve_line) > 3:
-        try:
-            subprocess.check_call(lve_line)
-        except subprocess.CalledProcessError as e:
-            utils.plog(logging.ERROR, e, exc_info=True)
-            logging.error('Wystąpił błąd: %s' % e)
-
-    # Set PHP version
-    if daa['php_version']:
-        subprocess.check_call(['/usr/bin/selectorctl', '-u', daa['username'], '-b', daa['php_version']])
+    if not applied:
+        exit(1)

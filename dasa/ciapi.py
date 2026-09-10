@@ -27,7 +27,15 @@ class SessionWithUrlBase(requests.Session):
     def __init__(self, url_base=None, *args, **kwargs):
         super(SessionWithUrlBase, self).__init__(*args, **kwargs)
         self.url_base = url_base
-        self.retries = Retry(total=5, backoff_factor=0.1, status_forcelist=[500, 502, 503, 504])
+        # 429 is retried too: the hook endpoints answer with account state the box has
+        # to apply, and a throttled request would otherwise drop that state silently.
+        # urllib3 retries only idempotent methods by default, and hooks only ever POST,
+        # so POST must be allowed explicitly or status_forcelist never applies.
+        retry_methods = {'allowed_methods': frozenset({'POST'})}
+        if not hasattr(Retry, 'DEFAULT_ALLOWED_METHODS'):
+            retry_methods = {'method_whitelist': frozenset({'POST'})}
+        self.retries = Retry(total=5, backoff_factor=0.1, status_forcelist=[429, 500, 502, 503, 504],
+                             **retry_methods)
 
     def request(self, method, url, **kwargs):
         # Next line of code is here for example purposes only.
